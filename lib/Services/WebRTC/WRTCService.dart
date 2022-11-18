@@ -14,6 +14,7 @@ import 'package:zomie_app/Services/WebRTC/Enums/enums.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Producer.dart';
 import 'package:zomie_app/Services/WebRTC/Models/ResponseApi.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
+import 'package:zomie_app/Services/WebRTC/Models/RoomInfo.dart';
 import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCConsumer2.dart';
 import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCProducer.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/SocketEvent.dart';
@@ -109,9 +110,31 @@ class WRTCService {
     return this.room;
   }
 
-  Future<ResponseApi> _checkRoomExist() async {
+  Future<RoomInfo> getRoom(String room_id) async {
+    RoomInfo _room = RoomInfo.init();
+    print("get room:" + room_id);
+    var url = WRTCCOnfig.host + "/get-room?id=" + room_id;
+    final response = await http.Client().get(Uri.parse(url)).catchError((e) {
+      print("!!!!!! error get room");
+    });
+    if (response.statusCode == 200 || response.statusCode == 404) {
+      _room = await RoomInfo.fromJson(jsonDecode(response.body));
+      _room.exist = response.statusCode == 200 ? true : false;
+    }
+    return _room;
+  }
+
+  Future<ResponseApi> CheckRoom(
+      {required String room_id, String? room_password}) async {
     ResponseApi responseApi = ResponseApi.init();
     try {
+      if (room_id != null) {
+        this.room.id = room_id;
+      }
+      if (room_password != null) {
+        this.room.password = room_password;
+      }
+
       Map bodyParam = {};
       if (this.room.password != null) {
         bodyParam.addAll({"password": this.room.password});
@@ -140,35 +163,40 @@ class WRTCService {
     return responseApi;
   }
 
+  void InitProducer({String? room_id, String? producer_name}) {
+    if (room_id != null) {
+      this.room.id = room_id;
+    }
+    if (producer_name != null) {
+      this.producer.name = producer_name;
+    }
+
+    this.wrtcProducer = new WRTCProducer(
+        room_id: this.room.id,
+        producer: this.producer,
+        callType: CallType.videoCall);
+  }
+
   Future<void> JoinCall(
       {required String room_id, String? room_password}) async {
     try {
-      if (room_id != null) {
-        this.room.id = room_id;
+      // ResponseApi _roomExist = await CheckRoom(room_id: room_id);
+      // if (_roomExist.status_code != 200) {
+      //   if (defaultTargetPlatform != TargetPlatform.windows) {
+      //     Fluttertoast.showToast(
+      //         msg: _roomExist.message,
+      //         toastLength: Toast.LENGTH_LONG,
+      //         gravity: ToastGravity.CENTER,
+      //         timeInSecForIosWeb: 1,
+      //         backgroundColor: Colors.red,
+      //         textColor: Colors.white,
+      //         fontSize: 16.0);
+      //   }
+      //   return;
+      // }
+      if (this.wrtcProducer == null) {
+        InitProducer(room_id: room_id);
       }
-      if (room_password != null) {
-        this.room.password = room_password;
-      }
-
-      ResponseApi _roomExist = await _checkRoomExist();
-      if (_roomExist.status_code != 200) {
-        if (defaultTargetPlatform != TargetPlatform.windows) {
-          Fluttertoast.showToast(
-              msg: _roomExist.message,
-              toastLength: Toast.LENGTH_LONG,
-              gravity: ToastGravity.CENTER,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.red,
-              textColor: Colors.white,
-              fontSize: 16.0);
-        }
-        return;
-      }
-
-      this.wrtcProducer = new WRTCProducer(
-          room_id: this.room.id,
-          producer: this.producer,
-          callType: CallType.videoCall);
       await this.wrtcProducer!.CreateConnection();
       if (this.wrtcProducer!.producer.id != null) {
         this.inCall = true;
@@ -218,12 +246,12 @@ class WRTCService {
         };
         WRTCSocket.instance().socket.emit("end-call", data);
         this.wrtcProducer!.Dispose();
-        this.wrtcProducer = null;
+        // this.wrtcProducer = null;
       }
-      await WRTCConsumerBloc.instance.RemoveAllConsumers();
+      // await WRTCConsumerBloc.instance.RemoveAllConsumers();
       await WRTCMessageBloc.instance().Destroy();
 
-      this.room = Room.init();
+      // this.room = Room.init();
       this.inCall = false;
     } catch (e) {
       print(e);

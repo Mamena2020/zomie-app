@@ -1,4 +1,5 @@
-import 'package:zomie_app/Views/Call/RoomView.dart';
+import 'package:zomie_app/Controllers/RoomController.dart';
+import 'package:zomie_app/Views/Room/RoomView.dart';
 
 import '/Controllers/HomeController.dart';
 
@@ -8,7 +9,8 @@ class RegisterRouter {
   static List<SetRouter> Routers() {
     return [
       SetRouter(path: "/", child: HomeController().index()),
-      SetRouter(path: RoomView.routeName, child: RoomView()),
+      SetRouter(
+          path: RoomController.indexRouteName, child: RoomController.index()),
       // SetRouter(path: RoomView.routeName + ":roomId", child: RoomView()),
 
       // SetRouter(path: DesignView.routeName + "/:uid/edit", child: DesignView()),

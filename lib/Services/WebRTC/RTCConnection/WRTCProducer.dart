@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -104,15 +105,22 @@ class WRTCProducer {
   List<Candidate> candidates = [];
 
   bool firstConnect = false;
+
+  GetUserMedia() async {
+    print("get user media");
+    producer.hasMedia = HasMedia.init();
+    this.stream = await WRTCUtils.GetUserMedia(callType);
+    this.videoRenderer.srcObject = this.stream!;
+  }
+
   /**
    * create peer connection to server
    */
   Future<void> CreateConnection() async {
-    producer.hasMedia = HasMedia.init();
     candidates.clear();
-
-    this.stream = await WRTCUtils.GetUserMedia(callType);
-
+    if (this.stream == null) {
+      await GetUserMedia();
+    }
     this.peer = await createPeerConnection(
         WRTCCOnfig.configurationPeerConnection, WRTCCOnfig.offerSdpConstraints);
 
@@ -308,6 +316,96 @@ class WRTCProducer {
             child: CircularProgressIndicator(),
           );
         },
+      ),
+    );
+  }
+
+  Widget ShowMicIcon({Function? onChange}) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(50),
+        child: new BackdropFilter(
+          filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+          child: InkWell(
+            onTap: () async {
+              await WRTCService.instance().MuteUnMuted();
+              if (onChange != null) {
+                print("audio status:" +
+                    WRTCService.instance().isAudioOn.toString());
+                onChange();
+              }
+            },
+            child: new Container(
+              width: 35.0,
+              height: 35.0,
+              decoration: new BoxDecoration(
+                color: Colors.grey.shade200.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(50),
+                boxShadow: [
+                  new BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 10.0,
+                      spreadRadius: 10),
+                ],
+              ),
+              child: new Center(
+                child: Icon(
+                  this.producer.hasMedia.audio ? Icons.mic : Icons.mic_off,
+                  color: this.producer.hasMedia.audio
+                      ? Colors.white
+                      : Colors.red.shade800,
+                  size: 17,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget ShowCameraIcon({Function? onChange}) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(50),
+        child: new BackdropFilter(
+          filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+          child: InkWell(
+            onTap: () async {
+              await WRTCService.instance().CameraOnOff();
+              if (onChange != null) {
+                onChange();
+              }
+            },
+            child: new Container(
+              width: 35.0,
+              height: 35.0,
+              decoration: new BoxDecoration(
+                color: Colors.grey.shade200.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(50),
+                boxShadow: [
+                  new BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 10.0,
+                      spreadRadius: 10),
+                ],
+              ),
+              child: new Center(
+                child: Icon(
+                  this.producer.hasMedia.video
+                      ? Icons.videocam
+                      : Icons.videocam_off,
+                  color: this.producer.hasMedia.video
+                      ? Colors.white
+                      : Colors.red.shade800,
+                  size: 17,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
