@@ -36,51 +36,43 @@ class _RoomIndexViewState extends State<RoomIndexView> {
   }
 
   RoomInfo roomInfo = RoomInfo.init();
-  bool init = false;
+  bool isLoad = false;
   GetRoom() async {
     roomInfo =
         await WRTCService.instance().getRoom(RouteService.params["id"] ?? '');
     print(roomInfo.message);
 
     setState(() {
-      init = true;
+      isLoad = true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    return !isLoad
+        ? template(child: CircularProgressIndicator())
+        : !roomInfo.exist
+            ? template(child: Text("Room not found"), showAppbar: true)
+            : roomExist();
+  }
+
+  Widget template({required Widget child, bool showAppbar = false}) {
     return Scaffold(
-        appBar: AppBar(
-          actions: [
-            // IconButton(
-            //     onPressed: () async {
-            //       if (room_id != "") {
-            //         await Clipboard.setData(ClipboardData(text: room_id));
-            //       }
-            //     },
-            //     icon: Icon(Icons.copy))
-          ],
-        ),
+        appBar: showAppbar ? AppBar() : null,
         body: Container(
-            color: Colors.white,
-            child: Center(
-              child: !init
-                  ? CircularProgressIndicator()
-                  : roomInfo.exist
-                      ? WRTCService.instance().inCall
-                          ? RoomView(
-                              room: WRTCService.instance().room,
-                              // onEndCall: () {
-                              //   setState(() {});
-                              // },
-                            )
-                          : LobbyView(
-                              roomInfo: roomInfo,
-                              onJoin: () {
-                                setState(() {});
-                              },
-                            )
-                      : Text("Room not found"),
-            )));
+          child: Center(child: child),
+        ));
+  }
+
+  Widget roomExist() {
+    if (WRTCService.instance().inCall) {
+      return RoomView();
+    }
+    return LobbyView(
+      roomInfo: roomInfo,
+      onJoin: () {
+        setState(() {});
+      },
+    );
   }
 }

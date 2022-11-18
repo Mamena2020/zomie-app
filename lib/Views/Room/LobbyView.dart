@@ -43,28 +43,33 @@ class _LobbyViewState extends State<LobbyView> {
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
-    return Container(
-      child: Center(
-        child: !isLoad
-            ? Text("Give permision camera & microphone")
-            : WRTCService.instance().wrtcProducer!.stream == null
-                ? Text("You have to give permision camera & microphone")
-                : width > height
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          producerMedia(),
-                          SizedBox(
-                              height: width > height
-                                  ? (width * 0.5) * 0.5
-                                  : width * 0.9,
-                              child: info())
-                        ],
-                      )
-                    : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [producerMedia(), info()],
-                      ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Lobby"),
+      ),
+      body: Container(
+        child: Center(
+          child: !isLoad
+              ? Text("Give permision camera & microphone")
+              : WRTCService.instance().wrtcProducer!.stream == null
+                  ? Text("You have to give permision camera & microphone")
+                  : width > height
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            producerMedia(),
+                            SizedBox(
+                                height: width > height
+                                    ? (width * 0.5) * 0.5
+                                    : width * 0.9,
+                                child: info())
+                          ],
+                        )
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [producerMedia(), info()],
+                        ),
+        ),
       ),
     );
   }
@@ -126,6 +131,7 @@ class _LobbyViewState extends State<LobbyView> {
                         },
                         decoration: InputDecoration(
                             hintText: 'Password',
+                            hintStyle: TextStyle(color: Colors.grey.shade400),
                             contentPadding:
                                 EdgeInsets.symmetric(vertical: 18.0),
                             errorText: responseRoom.status_code != 200

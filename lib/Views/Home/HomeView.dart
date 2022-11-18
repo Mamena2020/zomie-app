@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zomie_app/Controllers/SettingController.dart';
 import 'package:zomie_app/Router/RouterService.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 import 'package:zomie_app/Views/Room/RoomView.dart';
@@ -30,6 +31,16 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Zomie"),
+        actions: [
+          IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () {
+                RouteService.router.navigateTo(
+                  context,
+                  SettingController.indexRouteName,
+                );
+              }),
+        ],
       ),
       body: Container(
           color: Colors.white,
@@ -84,6 +95,7 @@ class _HomeViewState extends State<HomeView> {
               },
               decoration: InputDecoration(
                 hintText: 'Room id or link',
+                hintStyle: TextStyle(color: Colors.grey.shade400),
                 contentPadding: EdgeInsets.symmetric(vertical: 18.0),
               ),
             ),

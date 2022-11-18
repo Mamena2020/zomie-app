@@ -21,10 +21,9 @@ import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform;
 import 'package:zomie_app/Views/Room/LobbyView.dart';
 
 class RoomView extends StatefulWidget {
-  // Function onEndCall;
-  Room room;
-
-  RoomView({super.key, required this.room});
+  RoomView({
+    super.key,
+  });
 
   @override
   State<RoomView> createState() => _RoomViewState();
@@ -144,10 +143,11 @@ class _RoomViewState extends State<RoomView> {
                 borderRadius: BorderRadius.circular(15),
                 child: InkWell(
                   onTap: () async {
+                    String destination =
+                        "/room/" + WRTCService.instance().room.id;
                     await WRTCService.instance().EndCall();
-                    RouteService.router.navigateTo(
-                        context, "/room/" + widget.room.id,
-                        replace: true);
+                    RouteService.router
+                        .navigateTo(context, destination, replace: true);
                   },
                   child: new Container(
                     width: 50.0,
