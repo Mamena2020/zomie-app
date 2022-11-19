@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:universal_html/html.dart';
 import 'package:zomie_app/Services/WebRTC/Models/ResponseApi.dart';
 import 'package:zomie_app/Services/WebRTC/Models/RoomInfo.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
@@ -21,15 +18,13 @@ class _LobbyViewState extends State<LobbyView> {
     // TODO: implement initState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      GetUserMedia();
+      PrepareForMeeting();
     });
   }
 
   bool isLoad = false;
-  GetUserMedia() async {
-    if (WRTCService.instance().wrtcProducer == null) {
-      WRTCService.instance().InitProducer(room_id: this.widget.roomInfo.id);
-    }
+  PrepareForMeeting() async {
+    WRTCService.instance().InitProducer(room_id: this.widget.roomInfo.id);
     await WRTCService.instance().wrtcProducer!.GetUserMedia();
     setState(() {
       isLoad = true;
@@ -65,19 +60,37 @@ class _LobbyViewState extends State<LobbyView> {
                                 child: info())
                           ],
                         )
-                      : Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [producerMedia(), info()],
+                      : SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [producerMedia(), info()],
+                          ),
                         ),
         ),
       ),
     );
   }
 
+  Size _producerMediaSize() {
+    Size _size = Size.zero;
+    // landscape
+    if (width > height) {
+      _size = Size(width * 0.5, (width * 0.5) * 0.5);
+    } else {
+      if (width > 400) {
+        _size = Size(400, 600);
+      } else {
+        _size = Size(width * 0.8, (width * 1.2));
+      }
+    }
+
+    return _size;
+  }
+
   Widget producerMedia() {
     return SizedBox(
-        width: width > height ? width * 0.5 : width * 0.9,
-        height: width > height ? (width * 0.5) * 0.5 : width * 0.9,
+        width: _producerMediaSize().width,
+        height: _producerMediaSize().height,
         child: Stack(
           children: [
             WRTCService.instance().wrtcProducer!.ShowMedia(),
@@ -117,11 +130,11 @@ class _LobbyViewState extends State<LobbyView> {
           ),
           !this.widget.roomInfo.password
               ? SizedBox()
-              : SizedBox(
-                  width: 150.0,
-                  height: 60,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: 150.0,
+                    height: 60,
                     child: SizedBox(
                       height: 50,
                       child: TextField(
@@ -141,7 +154,7 @@ class _LobbyViewState extends State<LobbyView> {
                     ),
                   ),
                 ),
-          JoinWidget()
+          Center(child: JoinWidget())
         ],
       ),
     );
@@ -163,6 +176,7 @@ class _LobbyViewState extends State<LobbyView> {
   Widget JoinButton() {
     return SizedBox(
       height: 40,
+      width: 100,
       child: ElevatedButton(
         onPressed: () async {
           if (!joinPressing) {
@@ -188,8 +202,10 @@ class _LobbyViewState extends State<LobbyView> {
           }
         },
         child: joinPressing
-            ? CircularProgressIndicator(
-                color: Colors.white,
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
               )
             : Text(
                 "Join now",
@@ -197,7 +213,7 @@ class _LobbyViewState extends State<LobbyView> {
               ),
         style: ElevatedButton.styleFrom(
           // shape: CircleBorder(),
-          padding: EdgeInsets.all(17),
+          padding: EdgeInsets.all(10),
           backgroundColor: Colors.teal, // <-- Button color
           // foregroundColor: Colors.red, // <-- Splash color
         ),

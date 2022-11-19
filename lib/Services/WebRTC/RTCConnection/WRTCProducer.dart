@@ -136,10 +136,10 @@ class WRTCProducer {
     //----------------- process handshake
     // renegitiaion needed allways call wen gettrack it trigger to addtrack
     this.peer!.onRenegotiationNeeded = () async {
-      if (!firstConnect) {
-        await _onRenegotiationNeeded();
-        firstConnect = true;
-      }
+      // if (!firstConnect) {
+      await _onRenegotiationNeeded();
+      firstConnect = true;
+      // }
     };
     _onIceCandidate();
 
@@ -159,57 +159,57 @@ class WRTCProducer {
   }
 
   _onRenegotiationNeeded() async {
-    try {
-      // var offer = await this.peer!.createOffer({'offerToReceiveVideo': 1});
-      var offer = await this.peer!.createOffer();
-      await this.peer!.setLocalDescription(offer);
+    // try {
+    // var offer = await this.peer!.createOffer({'offerToReceiveVideo': 1});
+    var offer = await this.peer!.createOffer({'offerToReceiveVideo': 1});
+    await this.peer!.setLocalDescription(offer);
 
-      var _desc = await peer!.getLocalDescription();
-      var sdp = await WRTCUtils.sdpToJsonString(desc: _desc!);
+    var _desc = await peer!.getLocalDescription();
+    var sdp = await WRTCUtils.sdpToJsonString(desc: _desc!);
 
-      String bodyParams = "";
-      String url = "";
-      url = WRTCCOnfig.host + "/join-room";
-      bodyParams = await jsonEncode({
-        "socket_id": WRTCSocket.instance().socket.id,
-        "sdp": sdp,
-        "room_id": this.room_id,
-        "use_sdp_transform": true,
-        "producer_id": this.producer.id,
-        "producer_name": this.producer.name,
-        "has_video": this.producer.hasMedia.video,
-        "has_audio": this.producer.hasMedia.audio,
-      });
-      final res = await http.Client()
-          .post(Uri.parse(url),
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: bodyParams)
-          .catchError((e) {
-        print("!!!!!! error call api");
-      });
+    String bodyParams = "";
+    String url = "";
+    url = WRTCCOnfig.host + "/join-room";
+    bodyParams = await jsonEncode({
+      "socket_id": WRTCSocket.instance().socket.id,
+      "sdp": sdp,
+      "room_id": this.room_id,
+      "use_sdp_transform": true,
+      "producer_id": this.producer.id,
+      "producer_name": this.producer.name,
+      "has_video": this.producer.hasMedia.video,
+      "has_audio": this.producer.hasMedia.audio,
+    });
+    final res = await http.Client()
+        .post(Uri.parse(url),
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: bodyParams)
+        .catchError((e) {
+      print("!!!!!! error call api");
+    });
 
+    if (res.statusCode == 200) {
+      var body = await jsonDecode(res.body);
+      this.producer.id = body["data"]["producer_id"] ?? '';
+      this.producer.name = body["data"]["producer_name"] ?? '';
+      room_id = body["data"]["room_id"] ?? '';
+      await WRTCUtils.SetRemoteDescriptionFromJson(
+          peer: peer!, sdpRemote: body["data"]["sdp"]);
+      print("@@@ success set remote");
       _AddCandidatesToServer();
-      if (res.statusCode == 200) {
-        var body = await jsonDecode(res.body);
-        this.producer.id = body["data"]["producer_id"] ?? '';
-        this.producer.name = body["data"]["producer_name"] ?? '';
-        room_id = body["data"]["room_id"] ?? '';
-        await WRTCUtils.SetRemoteDescriptionFromJson(
-            peer: peer!, sdpRemote: body["data"]["sdp"]);
-        print("@@@ success set remote");
-        List<dynamic> _prodDynamic =
-            await body["data"]["producers"] as List<dynamic>;
-        List<Producer> producers = await List<Producer>.from(
-            _prodDynamic.map((e) => Producer.fromJson(e)));
-        // WRTCService.instance()
-        //     .AddConsumers(producers: producers, room_id: room_id);
-      }
-    } catch (e) {
-      print("error _onRenegotiationNeeded");
-      print(e);
+      List<dynamic> _prodDynamic =
+          await body["data"]["producers"] as List<dynamic>;
+      List<Producer> producers = await List<Producer>.from(
+          _prodDynamic.map((e) => Producer.fromJson(e)));
+      // WRTCService.instance()
+      //     .AddConsumers(producers: producers, room_id: room_id);
     }
+    // } catch (e) {
+    //   print("error _onRenegotiationNeeded");
+    //   print(e);
+    // }
   }
 
   _setTrack() {
@@ -432,7 +432,6 @@ class WRTCProducer {
       }
       await StopMediaStream();
       if (this.peer != null) {
-        // await this.peer!.dispose();
         await this.peer!.close();
         this.peer = null;
       }

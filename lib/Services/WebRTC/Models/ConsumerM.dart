@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Producer.dart';
@@ -37,6 +38,7 @@ class ConsumerM {
     _mediaStream = mediaStream;
     this._videoRenderer.srcObject = _mediaStream;
     _streamController.sink.add(_mediaStream!);
+    print("Add Stream to Consumer..........................");
   }
 
   StreamId() {
@@ -60,37 +62,25 @@ class ConsumerM {
               decoration: BoxDecoration(color: Colors.black),
               child: StreamBuilder<MediaStream>(
                   initialData: this._mediaStream,
-                  stream: _streamController.stream,
+                  stream: this._streamController.stream,
                   builder: (_, snapshot) {
-                    if (snapshot.hasData) {
-                      return Stack(
-                        children: [
-                          this.producer.hasMedia.video
-                              ? RTCVideoView(this._videoRenderer)
-                              : Center(
-                                  child: Icon(
-                                    Icons.videocam_off,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                          this.producer.hasMedia.audio
-                              ? SizedBox()
-                              : Align(
-                                  alignment: Alignment.topLeft,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Icon(
-                                      Icons.mic_off,
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                )
-                        ],
+                    if (kIsWeb) {
+                      if (snapshot.hasData && snapshot.data != null) {
+                        // this._mediaStream = snapshot.data!;
+                        this._videoRenderer.srcObject = snapshot.data!;
+                        return _show();
+                      }
+                      return Center(child: CircularProgressIndicator());
+                    } else {
+                      if (snapshot.hasData) {
+                        this._mediaStream = snapshot.data!;
+                        this._videoRenderer.srcObject = snapshot.data!;
+                        return _show();
+                      }
+                      return Center(
+                        child: CircularProgressIndicator(),
                       );
                     }
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
                   })),
           Align(
             alignment: Alignment.bottomLeft,
@@ -110,6 +100,33 @@ class ConsumerM {
           )
         ],
       ),
+    );
+  }
+
+  Widget _show() {
+    return Stack(
+      children: [
+        this.producer.hasMedia.video
+            ? RTCVideoView(this._videoRenderer)
+            : Center(
+                child: Icon(
+                  Icons.videocam_off,
+                  color: Colors.red,
+                ),
+              ),
+        this.producer.hasMedia.audio
+            ? SizedBox()
+            : Align(
+                alignment: Alignment.topLeft,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(
+                    Icons.mic_off,
+                    color: Colors.red,
+                  ),
+                ),
+              )
+      ],
     );
   }
 }

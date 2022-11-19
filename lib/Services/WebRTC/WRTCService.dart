@@ -248,7 +248,6 @@ class WRTCService {
         this.wrtcProducer!.Dispose();
         // this.wrtcProducer = null;
       }
-      // await WRTCConsumerBloc.instance.RemoveAllConsumers();
       await WRTCMessageBloc.instance().Destroy();
 
       // this.room = Room.init();

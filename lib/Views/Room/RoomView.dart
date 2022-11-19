@@ -54,47 +54,49 @@ class _RoomViewState extends State<RoomView> {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      body: Container(
-        color: Colors.white,
-        child: Stack(children: [
-          WRTCService.instance()
-              .wrtcConsumer2!
-              .Show(height: height, width: width),
-          Actions(),
-          width > 550
-              ? Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
+    return SafeArea(
+      child: Scaffold(
+        body: Container(
+          color: Colors.white,
+          child: Stack(children: [
+            WRTCService.instance()
+                .wrtcConsumer2!
+                .Show(height: height, width: width),
+            Actions(),
+            width > 550
+                ? Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: producerMedia(),
+                        ),
+                      ),
+                      WRTCMessageBloc.instance().Show(
+                          screenWidth: width,
+                          closeClick: () {
+                            setState(() {});
+                          })
+                    ],
+                  )
+                : Stack(
+                    children: [
+                      Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: producerMedia(),
                       ),
-                    ),
-                    WRTCMessageBloc.instance().Show(
-                        screenWidth: width,
-                        closeClick: () {
-                          setState(() {});
-                        })
-                  ],
-                )
-              : Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: producerMedia(),
-                    ),
-                    Align(
-                        alignment: Alignment.centerRight,
-                        child: WRTCMessageBloc.instance().Show(
-                            screenWidth: width,
-                            closeClick: () {
-                              setState(() {});
-                            }))
-                  ],
-                ),
-          Chat()
-        ]),
+                      Align(
+                          alignment: Alignment.centerRight,
+                          child: WRTCMessageBloc.instance().Show(
+                              screenWidth: width,
+                              closeClick: () {
+                                setState(() {});
+                              }))
+                    ],
+                  ),
+            Chat()
+          ]),
+        ),
       ),
     );
   }

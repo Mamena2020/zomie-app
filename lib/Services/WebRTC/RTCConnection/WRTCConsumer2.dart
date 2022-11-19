@@ -67,7 +67,7 @@ class WRTCConsumer2 {
 
       await WRTCUtils.SetRemoteDescriptionFromJson(
           peer: this.peer!, sdpRemote: sdpRemote);
-      var answer = await this.peer!.createAnswer({'offerToReceiveVideo': true});
+      var answer = await this.peer!.createAnswer({'offerToReceiveVideo': 1});
 
       await this.peer!.setLocalDescription(answer);
 
@@ -141,9 +141,9 @@ class WRTCConsumer2 {
         ));
       }
     }
-    await _shouldAdded(newConsumersM);
-    await _shouldRemove(newConsumersM);
-    await _streamEvent();
+    _shouldAdded(newConsumersM);
+    _shouldRemove(newConsumersM);
+    _streamEvent();
 
     //--------------------------------------------
   }
@@ -162,7 +162,7 @@ class WRTCConsumer2 {
         this.consumers.add(p);
       }
     }
-    _streamEvent();
+    await _streamEvent();
   }
 
   _shouldRemove(List<ConsumerM> newConsumersM) async {
@@ -172,7 +172,6 @@ class WRTCConsumer2 {
       }
 
       this.consumers.clear();
-      _streamEvent();
       print("clear all consumers");
       return;
     }
@@ -198,20 +197,37 @@ class WRTCConsumer2 {
         i--;
       }
     }
-    _streamEvent();
+    await _streamEvent();
   }
 
   getTrack() {
     try {
+      // this.peer!.onAddStream = (e) {
+      //   print("on add stream");
+      // };
+
+      // this.peer!.onTrack = (e) {
+      //   print('Ontrack');
+
+      //   e.streams.first.onAddTrack = (s) async {
+      //     print("on add");
+      //     setTrack(e.streams.first);
+      //   };
+      //   e.streams.first.onRemoveTrack = (s) async {
+      //     print("on remove track");
+      //     this.consumers.removeWhere((c) => c.StreamId() == e.streams.first.id);
+      //     await _streamEvent();
+      //   };
+      // };
       this.peer!.onAddTrack = (stream, track) {
         print("on add");
         setTrack(stream);
       };
 
-      this.peer!.onRemoveTrack = (stream, track) {
+      this.peer!.onRemoveTrack = (stream, track) async {
         print("on remove track");
         this.consumers.removeWhere((e) => e.StreamId() == stream.id);
-        _streamEvent();
+        await _streamEvent();
       };
     } catch (e) {
       print("!!!!!!!!!!! error get track media stream");
@@ -222,10 +238,6 @@ class WRTCConsumer2 {
   setTrack(MediaStream e) async {
     int i = this.consumers.indexWhere((c) => c.producer.stream_id == e.id);
     if (i >= 0) {
-      // print("stream1: " + e.id);
-      // print("stream2: " + this.consumers[i].producer.stream_id);
-      // print("total consumers:" + this.consumers.length.toString());
-      // printConsumers();
       this.consumers[i].AddMediaStream(e);
       _streamEvent();
     }
