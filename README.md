@@ -1,19 +1,23 @@
 # zomie
 
-A new Flutter project.
+Online meeting app like google meet, build with flutter for all platforms.
+this app uses webrtc for media streaming, and io sockets for signaling & messaging.
+the server running in nodejs. each client will have 2 active peer 1 for broadcasting &
+1 for consumer for all user in the room. 
+for server using star topology & SFU(Selective Forwarding Unit) method for routing.
 
-## Getting Started
+-#SS apps
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Current status platform
+  - Android 
+  - Windows
+  - Web (addOnTrack not working on web-> on proggres new solution)
+  - Ios (not tested yet)
+  - Linux (not tested yet)
+  - Mac (not tested yet)
 
    
 #Flutter info
