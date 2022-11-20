@@ -10,7 +10,7 @@ Server using star topology & SFU(Selective Forwarding Unit) method for routing.
 
 <img src="ss/Capture.PNG" width="370">
 <img src="ss/Capture2.PNG" width="370">
-<img src="ss/Capture3.PNG" width="370">
+<img src="ss/Capture5.PNG" width="370">
 <img src="ss/Capture4.PNG" width="370">
 
 
