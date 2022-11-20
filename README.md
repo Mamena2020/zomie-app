@@ -2,7 +2,7 @@
 
 Online meeting app like google meet, build with flutter for all platforms.
 this app uses webrtc for media streaming, and io sockets for signaling & messaging.
-the server running in nodejs. each client will have 2 active peer 1 for broadcasting &
+<a href="https://github.com/Mamena2020/zomie-server"> Server<a> running in nodejs. each client will have 2 active peer 1 for broadcasting &
 1 for consumer for all user in the room. 
 for server using star topology & SFU(Selective Forwarding Unit) method for routing.
 
@@ -16,8 +16,8 @@ for server using star topology & SFU(Selective Forwarding Unit) method for routi
 
 
 - Current status platform
-  - Android 
-  - Windows
+  - Android (tested)
+  - Windows (tested)
   - Web (addOnTrack not working on web-> on proggres new solution)
   - Ios (not tested yet)
   - Linux (not tested yet)
