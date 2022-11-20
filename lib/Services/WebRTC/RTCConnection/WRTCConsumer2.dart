@@ -123,6 +123,7 @@ class WRTCConsumer2 {
     for (int i = 0; i < this.consumers.length; i++) {
       if (this.consumers[i].producer.id == producer.id) {
         this.consumers[i].UpdateData(producer);
+        SetStreamEvent();
       }
     }
   }
@@ -143,7 +144,7 @@ class WRTCConsumer2 {
     }
     _shouldAdded(newConsumersM);
     _shouldRemove(newConsumersM);
-    _streamEvent();
+    SetStreamEvent();
 
     //--------------------------------------------
   }
@@ -162,7 +163,6 @@ class WRTCConsumer2 {
         this.consumers.add(p);
       }
     }
-    await _streamEvent();
   }
 
   _shouldRemove(List<ConsumerM> newConsumersM) async {
@@ -197,37 +197,38 @@ class WRTCConsumer2 {
         i--;
       }
     }
-    await _streamEvent();
   }
 
   getTrack() {
     try {
       // this.peer!.onAddStream = (e) {
       //   print("on add stream");
+      //   setTrack(e);
+      // };
+      // this.peer!.onRemoveStream = (e) async {
+      //   print("on remove stream");
+      //   this.consumers.removeWhere((c) => c.StreamId() == e.id);
+      //   await _streamEvent();
       // };
 
-      // this.peer!.onTrack = (e) {
-      //   print('Ontrack');
-
-      //   e.streams.first.onAddTrack = (s) async {
-      //     print("on add");
-      //     setTrack(e.streams.first);
-      //   };
-      //   e.streams.first.onRemoveTrack = (s) async {
-      //     print("on remove track");
-      //     this.consumers.removeWhere((c) => c.StreamId() == e.streams.first.id);
-      //     await _streamEvent();
-      //   };
-      // };
+      this.peer!.onTrack = (e) {
+        print("on track");
+        e.streams[0].onAddTrack = (e2) {
+          print("on add track");
+        };
+        e.streams[0].onRemoveTrack = (e2) {
+          print("on add track");
+        };
+      };
       this.peer!.onAddTrack = (stream, track) {
-        print("on add");
+        print("on add track");
         setTrack(stream);
       };
 
       this.peer!.onRemoveTrack = (stream, track) async {
         print("on remove track");
         this.consumers.removeWhere((e) => e.StreamId() == stream.id);
-        await _streamEvent();
+        await SetStreamEvent();
       };
     } catch (e) {
       print("!!!!!!!!!!! error get track media stream");
@@ -238,16 +239,18 @@ class WRTCConsumer2 {
   setTrack(MediaStream e) async {
     int i = this.consumers.indexWhere((c) => c.producer.stream_id == e.id);
     if (i >= 0) {
-      this.consumers[i].AddMediaStream(e);
-      _streamEvent();
+      await this.consumers[i].AddMediaStream(e);
+      await SetStreamEvent();
     }
   }
 
-  _streamEvent() {
+  SetStreamEvent() async {
     if (consumerStream.isClosed) {
-      consumerStream = StreamController<List<ConsumerM>>.broadcast();
+      consumerStream = new StreamController<List<ConsumerM>>.broadcast();
     }
     consumerStream.sink.add(this.consumers);
+    print("consumers stream");
+    print(this.consumers.length);
   }
 
   Widget Show({required double height, required double width}) {
@@ -276,8 +279,11 @@ class WRTCConsumer2 {
                 children: snapshot.data!.map((e) => e.Show()).toList(),
               );
             }
+            return Center(child: Text("Something wrong"));
           }
-          return SizedBox();
+          return SizedBox(
+            child: Center(child: Text("There is no one but you")),
+          );
         });
   }
 
@@ -292,7 +298,7 @@ class WRTCConsumer2 {
         }
         this.consumers.clear();
       }
-      this.consumerStream.close();
+      // this.consumerStream.close();
       if (this.peer != null) {
         await this.peer!.close();
         this.peer = null;

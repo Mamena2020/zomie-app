@@ -161,6 +161,14 @@ class WRTCProducer {
   _onRenegotiationNeeded() async {
     // try {
     // var offer = await this.peer!.createOffer({'offerToReceiveVideo': 1});
+
+    String _platform = "";
+    if (kIsWeb) {
+      _platform = "web";
+    } else {
+      _platform = defaultTargetPlatform.name;
+    }
+
     var offer = await this.peer!.createOffer({'offerToReceiveVideo': 1});
     await this.peer!.setLocalDescription(offer);
 
@@ -179,6 +187,7 @@ class WRTCProducer {
       "producer_name": this.producer.name,
       "has_video": this.producer.hasMedia.video,
       "has_audio": this.producer.hasMedia.audio,
+      "platform": _platform
     });
     final res = await http.Client()
         .post(Uri.parse(url),
