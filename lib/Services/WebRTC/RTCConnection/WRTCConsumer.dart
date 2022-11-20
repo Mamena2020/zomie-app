@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:zomie_app/Services/WebRTC/Config/WRTCConfig.dart';
@@ -193,6 +194,8 @@ class WRTCConsumer {
     }
   }
 
+  Map<String, String> _tamp = {};
+
   getTrack() {
     try {
       // this.peer!.onAddStream = (e) {
@@ -206,13 +209,22 @@ class WRTCConsumer {
       // };
 
       this.peer!.onTrack = (e) {
-        print("on track");
-        e.streams[0].onAddTrack = (e2) {
-          print("on add track");
-        };
-        e.streams[0].onRemoveTrack = (e2) {
-          print("on add track");
-        };
+        if (kIsWeb) {
+          print("-- on track: " + e.streams.first.id);
+          if (!_tamp.containsKey(e.streams.first.id)) {
+            _tamp.addAll({e.streams.first.id: e.streams.first.id});
+          } else {
+            _tamp.remove(e.streams.first.id);
+            setTrack(e.streams.first);
+          }
+        }
+
+        // e.streams.first.onAddTrack = (e2) {
+        //   print("on add track");
+        // };
+        // e.streams.first.onRemoveTrack = (e2) {
+        //   print("on add track");
+        // };
       };
       this.peer!.onAddTrack = (stream, track) {
         print("on add track");
