@@ -6,8 +6,12 @@ the server running in nodejs. each client will have 2 active peer 1 for broadcas
 1 for consumer for all user in the room. 
 for server using star topology & SFU(Selective Forwarding Unit) method for routing.
 
--#SS apps
+#SS apps
 
+<img src="ss/Capture.PNG" width="350">
+<img src="ss/Capture2.PNG" width="350">
+<img src="ss/Capture3.PNG" width="350">
+<img src="ss/Capture4.PNG" width="350">
 
 
 
