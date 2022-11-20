@@ -1,24 +1,7 @@
-import 'dart:convert';
-import 'dart:developer';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:provider/provider.dart';
 import 'package:zomie_app/Router/RouterService.dart';
-import 'package:zomie_app/Services/WebRTC/Blocs/WRTCConsumerBloc.dart';
 import 'package:zomie_app/Services/WebRTC/Blocs/WRTCMessageBloc.dart';
-import 'package:zomie_app/Services/WebRTC/Models/ConsumerM.dart';
-import 'package:zomie_app/Services/WebRTC/Models/Producer.dart';
-import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
-import 'package:zomie_app/Services/WebRTC/Models/RoomInfo.dart';
-import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCConsumer.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
-import 'package:http/http.dart' as http;
-import 'package:sdp_transform/sdp_transform.dart' as sdpt;
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform;
-import 'package:zomie_app/Views/Room/LobbyView.dart';
 
 class RoomView extends StatefulWidget {
   RoomView({
@@ -240,7 +223,7 @@ class _RoomViewState extends State<RoomView> {
 
   Widget producerMedia() {
     double _size = width > height ? width : height;
-    if (WRTCConsumerBloc.instance.rtcConsumers.length > 2) {
+    if (WRTCService.instance().wrtcConsumer2!.consumers.length > 2) {
       _size = _size * 0.1;
     } else {
       _size = _size * 0.15;

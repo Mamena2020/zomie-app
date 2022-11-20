@@ -3,37 +3,25 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:http/http.dart' as http;
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:zomie_app/Services/WebRTC/Config/WRTCConfig.dart';
-import 'package:zomie_app/Services/WebRTC/Enums/enums.dart';
+import 'package:zomie_app/Services/WebRTC/Models/ConsumerM.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Producer.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocket.dart';
 import 'package:zomie_app/Services/WebRTC/Utils/WRTCUtils.dart';
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 
-/**
-   * @param producer_id only 
-   */
 class WRTCConsumer {
-  String? id;
-  Producer producer; // target producer thats will be consumer of this peer
   String currentProducerId;
 
   RTCPeerConnection? peer;
-  RTCVideoRenderer videoRenderer = new RTCVideoRenderer();
 
-  StreamController<MediaStream> _streamController =
-      StreamController<MediaStream>.broadcast();
+  List<ConsumerM> consumers = [];
 
-  WRTCConsumer({required this.producer, required this.currentProducerId}) {
-    this.videoRenderer.initialize();
-  }
+  StreamController<List<ConsumerM>> consumerStream =
+      StreamController<List<ConsumerM>>.broadcast();
 
-  /**
-   * create peer connection to server
-   */
-  Future<void> CreateConnection() async {
+  WRTCConsumer({required this.currentProducerId}) {}
+
+  init() async {
     this.peer = await createPeerConnection(
         WRTCCOnfig.configurationPeerConnection, WRTCCOnfig.offerSdpConstraints);
     this.peer!.addTransceiver(
@@ -42,20 +30,23 @@ class WRTCConsumer {
     this.peer!.addTransceiver(
         kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
         init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly));
-    _getTrack();
+    getTrack();
+  }
+
+  /**
+   * create peer connection to server
+   */
+  Future<void> CreateConnection() async {
+    await RenegotiationNeeded();
     //----------------- process handshake
     this.peer!.onRenegotiationNeeded = () async {
-      await _onRenegotiationNeeded();
+      RenegotiationNeeded();
     };
-    // _onIceCandidate();
     this.peer!.onIceConnectionState = (e) {
-      // _onIceConnectionState();
       try {
         if (this.peer != null) {
           var connectionStatus2 = this.peer!.iceConnectionState;
-          print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Consumer: " +
-              this.id! +
-              " - " +
+          print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Consumer: - " +
               connectionStatus2.toString());
         }
       } catch (e) {
@@ -64,41 +55,25 @@ class WRTCConsumer {
     };
   }
 
-  _onRenegotiationNeeded() async {
+  RenegotiationNeeded({String? sdpRemote}) async {
     try {
-      var offer = await this.peer!.createOffer({'offerToReceiveVideo': 1});
-      await this.peer!.setLocalDescription(offer);
+      if (sdpRemote == null) return;
+
+      await WRTCUtils.SetRemoteDescriptionFromJson(
+          peer: this.peer!, sdpRemote: sdpRemote);
+      var answer = await this.peer!.createAnswer({'offerToReceiveVideo': 1});
+
+      await this.peer!.setLocalDescription(answer);
 
       var _desc = await this.peer!.getLocalDescription();
       var sdp = await WRTCUtils.sdpToJsonString(desc: _desc!);
       // print(sdp);
-      String bodyParams = await jsonEncode({
-        "socket_id": WRTCSocket.instance().socket.id,
+      var data = {
+        "producer_id": this.currentProducerId,
         "sdp": sdp,
-        "producer_id": this.producer.id,
-        "use_sdp_transform": true,
-        "owner_producer_id": this.currentProducerId
-      });
-      final res = await http.Client()
-          .post(Uri.parse(WRTCCOnfig.host + "/consumer"),
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: bodyParams)
-          .catchError((e) {
-        print("!!!!!! error call api");
-      });
-      if (res.statusCode == 200) {
-        print("@@@@@@@@@@ -> res body");
-        // print(res.body);
-        var body = await jsonDecode(res.body);
-        this.id = body["consumer_id"] ?? '';
-        await WRTCUtils.SetRemoteDescriptionFromJson(
-            peer: this.peer!, sdpRemote: body["sdp"]);
-        print("@@@ success set remote consumer");
+      };
 
-        // await _SendCandidateToServer();
-      }
+      WRTCSocket.instance().socket.emit("consumer-sdp", data);
     } catch (e) {
       print("error _onRenegotiationNeeded");
       print(e);
@@ -138,25 +113,116 @@ class WRTCConsumer {
   //   }
   // }
 
-  _getTrack() {
-    try {
-      print("media streamm000000000000000000000000000");
-      this.peer!.onTrack = (e) {
-        if (e.streams.isNotEmpty) {
-          // if (e.streams[0].getVideoTracks().isNotEmpty)
-          //   this.producer.hasMedia.video = true;
-          // if (e.streams[0].getAudioTracks().isNotEmpty) {
-          //   if (!e.streams[0].getAudioTracks()[0].enabled) {
-          //     this.producer.hasMedia.audio = true;
-          //   }
-          // }
-          // print(e.streams[0]);
-          this.videoRenderer.srcObject = e.streams[0];
-          if (_streamController.isClosed) {
-            _streamController = StreamController<MediaStream>.broadcast();
-          }
-          _streamController.sink.add(e.streams[0]);
+  UpdateConsumer({required Producer producer}) {
+    for (int i = 0; i < this.consumers.length; i++) {
+      if (this.consumers[i].producer.id == producer.id) {
+        this.consumers[i].UpdateData(producer);
+        SetStreamEvent();
+      }
+    }
+  }
+
+  UpdateConsumers({required List<Producer> producers}) async {
+    print("update consumers");
+    //-------------------------------------------- remove current producer
+    List<ConsumerM> newConsumersM = [];
+    for (int i = 0; i < producers.length; i++) {
+      if (producers[i].id == this.currentProducerId) {
+        await producers.removeAt(i);
+        i--;
+      } else {
+        newConsumersM.add(ConsumerM(
+          producer: producers[i],
+        ));
+      }
+    }
+    _shouldAdded(newConsumersM);
+    _shouldRemove(newConsumersM);
+    SetStreamEvent();
+
+    //--------------------------------------------
+  }
+
+  _shouldAdded(List<ConsumerM> newConsumersM) async {
+    bool exist = false;
+    for (var p in newConsumersM) {
+      exist = false;
+      for (var pLocal in this.consumers) {
+        if (p.producer.id == pLocal.producer.id) {
+          exist = true;
+          break;
         }
+      }
+      if (!exist) {
+        this.consumers.add(p);
+      }
+    }
+  }
+
+  _shouldRemove(List<ConsumerM> newConsumersM) async {
+    if (newConsumersM.isEmpty) {
+      for (int i = 0; i < this.consumers.length; i++) {
+        this.consumers[i].Dispose();
+      }
+
+      this.consumers.clear();
+      print("clear all consumers");
+      return;
+    }
+    print("show remove");
+
+    bool exist = false;
+    String _id = "";
+
+    for (int i = 0; i < this.consumers.length; i++) {
+      exist = false;
+      _id = "";
+      for (var p in newConsumersM) {
+        if (p.producer.id == this.consumers[i].producer.id) {
+          exist = true;
+          _id = p.producer.id;
+          break;
+        }
+      }
+      if (!exist) {
+        print("remove old");
+        this.consumers[i].Dispose();
+        this.consumers.removeAt(i);
+        i--;
+      }
+    }
+  }
+
+  getTrack() {
+    try {
+      // this.peer!.onAddStream = (e) {
+      //   print("on add stream");
+      //   setTrack(e);
+      // };
+      // this.peer!.onRemoveStream = (e) async {
+      //   print("on remove stream");
+      //   this.consumers.removeWhere((c) => c.StreamId() == e.id);
+      //   await _streamEvent();
+      // };
+
+      this.peer!.onTrack = (e) {
+        print("on track");
+        e.streams[0].onAddTrack = (e2) {
+          print("on add track");
+        };
+        e.streams[0].onRemoveTrack = (e2) {
+          print("on add track");
+        };
+      };
+      this.peer!.onAddTrack = (stream, track) {
+        print("on add track");
+        setTrack(stream);
+      };
+
+      this.peer!.onRemoveTrack = (stream, track) async {
+        print("on remove track");
+        this.consumers.removeWhere((e) => e.StreamId() == stream.id);
+        await SetStreamEvent();
       };
     } catch (e) {
       print("!!!!!!!!!!! error get track media stream");
@@ -164,115 +230,55 @@ class WRTCConsumer {
     }
   }
 
-  // _onIceConnectionState() {
-  //   try {
-  //     var connectionStatus = this.peer!.connectionState;
-  //     if (["disconnected", "failed", "closed"].contains(connectionStatus)) {
-  //       print("disconnected");
-  //     } else {
-  //       print("Connected");
-  //       if (defaultTargetPlatform != TargetPlatform.windows) {
-  //         Fluttertoast.showToast(
-  //             msg: "Connected",
-  //             toastLength: Toast.LENGTH_LONG,
-  //             gravity: ToastGravity.CENTER,
-  //             timeInSecForIosWeb: 1,
-  //             backgroundColor: Colors.green,
-  //             textColor: Colors.white,
-  //             fontSize: 16.0);
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
-  // _SendCandidateToServer() async {
-  //   print("send candidate from client to server");
-  //   var _json = await jsonEncode(
-  //       {"consumer_id": this.id, "candidate": _candidateClient});
-  //   SocketService.instance.socket.emit("consumer-candidate-from-client", _json);
-  // }
+  setTrack(MediaStream e) async {
+    int i = this.consumers.indexWhere((c) => c.producer.stream_id == e.id);
+    if (i >= 0) {
+      await this.consumers[i].AddMediaStream(e);
+      await SetStreamEvent();
+    }
+  }
 
-  Widget ShowMedia() {
-    return Flexible(
-      fit: FlexFit.tight,
-      flex: 1,
-      child: Stack(
-        children: [
-          new Container(
-              margin: new EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
-              decoration: new BoxDecoration(color: Colors.black),
-              child: StreamBuilder<MediaStream>(
-                  initialData: this.videoRenderer.srcObject,
-                  stream: _streamController.stream,
-                  builder: (_, snapshot) {
-                    if (!this.producer.hasMedia.video) {
-                      return Stack(
-                        children: [
-                          Center(
-                            child: Icon(
-                              Icons.videocam_off,
-                              color: Colors.red,
-                            ),
-                          ),
-                          this.producer.hasMedia.audio
-                              ? SizedBox()
-                              : Align(
-                                  alignment: Alignment.topLeft,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Icon(
-                                      Icons.mic_off,
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                )
-                        ],
-                      );
-                    }
+  SetStreamEvent() async {
+    if (consumerStream.isClosed) {
+      consumerStream = new StreamController<List<ConsumerM>>.broadcast();
+    }
+    consumerStream.sink.add(this.consumers);
+    print("consumers stream");
+    print(this.consumers.length);
+  }
 
-                    if (snapshot.hasData) {
-                      return Stack(
-                        children: [
-                          RTCVideoView(this.videoRenderer),
-                          this.producer.hasMedia.audio
-                              ? SizedBox()
-                              : Align(
-                                  alignment: Alignment.topLeft,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Icon(
-                                      Icons.mic_off,
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                )
-                        ],
-                      );
-                    }
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  })),
-          Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                color: Colors.black.withOpacity(0.5),
-                child: Padding(
-                  padding: const EdgeInsets.all(3.0),
-                  child: Text(
-                    this.producer.name,
-                    style: TextStyle(fontSize: 11, color: Colors.white),
-                  ),
-                ),
-              ),
-            ),
-          )
-        ],
-      ),
-    );
+  Widget Show({required double height, required double width}) {
+    return StreamBuilder<List<ConsumerM>>(
+        initialData: this.consumers,
+        stream: consumerStream.stream,
+        builder: (_, snapshot) {
+          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            if (snapshot.data!.length == 1) {
+              return Container(
+                  height: height,
+                  width: width,
+                  child: Column(
+                    children: [snapshot.data!.first.Show()],
+                  ));
+            } else if (snapshot.data!.length == 2) {
+              if (height > width) {
+                return Column(
+                    children: snapshot.data!.map((e) => e.Show()).toList());
+              }
+              return Row(
+                  children: snapshot.data!.map((e) => e.Show()).toList());
+            } else if (snapshot.data!.length > 2) {
+              return GridView.count(
+                crossAxisCount: height > width ? 2 : 3,
+                children: snapshot.data!.map((e) => e.Show()).toList(),
+              );
+            }
+            return Center(child: Text("Something wrong"));
+          }
+          return SizedBox(
+            child: Center(child: Text("There is no one but you")),
+          );
+        });
   }
 
 /**
@@ -280,10 +286,13 @@ class WRTCConsumer {
    */
   Dispose() async {
     try {
-      this._streamController.close();
-      if (this.videoRenderer != null) {
-        this.videoRenderer.srcObject = null;
+      if (this.consumers.isNotEmpty) {
+        for (var c in this.consumers) {
+          await c.Dispose();
+        }
+        this.consumers.clear();
       }
+      // this.consumerStream.close();
       if (this.peer != null) {
         await this.peer!.close();
         this.peer = null;

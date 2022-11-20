@@ -3,15 +3,15 @@
 Online meeting app like google meet, build with flutter for all platforms.
 this app uses webrtc for media streaming, and io sockets for signaling & messaging.
 <a href="https://github.com/Mamena2020/zomie-server"> Server<a> running in nodejs. each client will have 2 active peer 1 for broadcasting &
-1 for consumer for all user in the room. 
-for server using star topology & SFU(Selective Forwarding Unit) method for routing.
+1 as consumer for all user in the room. 
+Server using star topology & SFU(Selective Forwarding Unit) method for routing.
 
 #SS apps
 
-<img src="ss/Capture.PNG" width="350">
-<img src="ss/Capture2.PNG" width="350">
-<img src="ss/Capture3.PNG" width="350">
-<img src="ss/Capture4.PNG" width="350">
+<img src="ss/Capture.PNG" width="370">
+<img src="ss/Capture2.PNG" width="370">
+<img src="ss/Capture3.PNG" width="370">
+<img src="ss/Capture4.PNG" width="370">
 
 
 
@@ -25,6 +25,7 @@ for server using star topology & SFU(Selective Forwarding Unit) method for routi
 
    
 #Flutter info
+
 - build with version.
   - Flutter 3.3.4, dart 2.18.2
 - Android 

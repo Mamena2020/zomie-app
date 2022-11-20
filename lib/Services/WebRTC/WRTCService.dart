@@ -1,13 +1,5 @@
 import 'dart:convert';
-
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:sdp_transform/sdp_transform.dart' as sdpt;
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart' show defaultTargetPlatform;
-import 'package:zomie_app/Services/WebRTC/Blocs/WRTCConsumerBloc.dart';
 import 'package:zomie_app/Services/WebRTC/Blocs/WRTCMessageBloc.dart';
 import 'package:zomie_app/Services/WebRTC/Config/WRTCConfig.dart';
 import 'package:zomie_app/Services/WebRTC/Enums/enums.dart';
@@ -15,7 +7,7 @@ import 'package:zomie_app/Services/WebRTC/Models/Producer.dart';
 import 'package:zomie_app/Services/WebRTC/Models/ResponseApi.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
 import 'package:zomie_app/Services/WebRTC/Models/RoomInfo.dart';
-import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCConsumer2.dart';
+import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCConsumer.dart';
 import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCProducer.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/SocketEvent.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocket.dart';
@@ -28,13 +20,11 @@ class WRTCService {
   WRTCProducer? wrtcProducer;
   Producer producer = Producer.initGenerate();
 
-  WRTCConsumer2? wrtcConsumer2 = WRTCConsumer2(currentProducerId: "");
-
-  //------------------------------
+  WRTCConsumer? wrtcConsumer2 = WRTCConsumer(currentProducerId: "");
   WRTCService._() {
     WRTCSocket.instance();
     WRTCSocketEvent.Listen();
-    wrtcConsumer2 = WRTCConsumer2(currentProducerId: this.producer.id);
+    wrtcConsumer2 = WRTCConsumer(currentProducerId: this.producer.id);
     wrtcConsumer2!.init();
   }
   static WRTCService? _singleton = new WRTCService._();
@@ -50,29 +40,6 @@ class WRTCService {
     await EndCall();
     await WRTCSocket.instance().destroy();
     _singleton = null;
-  }
-
-  AddConsumers(
-      {required List<Producer> producers, required String room_id}) async {
-    try {
-      if (producers.isNotEmpty && room_id == this.room.id) {
-        print("UPDATE ROOM FROM SERVER");
-        producers.forEach((e) {
-          if (e.id != this.producer.id) {
-            WRTCConsumerBloc.instance.input.add(new WRTCConsumerEvent(
-                producer: Producer(
-                    id: e.id,
-                    name: e.name,
-                    hasMedia: e.hasMedia,
-                    stream_id: ''),
-                type: RoomEventType.join_room));
-          }
-        });
-      }
-    } catch (e) {
-      print(e);
-      print("ERROR Parsing data CONSUMER");
-    }
   }
 
   void SetProducerName({required String name}) {
@@ -180,20 +147,6 @@ class WRTCService {
   Future<void> JoinCall(
       {required String room_id, String? room_password}) async {
     try {
-      // ResponseApi _roomExist = await CheckRoom(room_id: room_id);
-      // if (_roomExist.status_code != 200) {
-      //   if (defaultTargetPlatform != TargetPlatform.windows) {
-      //     Fluttertoast.showToast(
-      //         msg: _roomExist.message,
-      //         toastLength: Toast.LENGTH_LONG,
-      //         gravity: ToastGravity.CENTER,
-      //         timeInSecForIosWeb: 1,
-      //         backgroundColor: Colors.red,
-      //         textColor: Colors.white,
-      //         fontSize: 16.0);
-      //   }
-      //   return;
-      // }
       if (this.wrtcProducer == null) {
         InitProducer(room_id: room_id);
       }

@@ -1,16 +1,12 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:zomie_app/Services/WebRTC/Blocs/WRTCConsumerBloc.dart';
 import 'package:zomie_app/Services/WebRTC/Blocs/WRTCMessageBloc.dart';
 import 'package:zomie_app/Services/WebRTC/Enums/enums.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Candidate.dart';
 import 'package:zomie_app/Services/WebRTC/Models/ConsumerM.dart';
-import 'package:zomie_app/Services/WebRTC/Models/HasMedia.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Producer.dart';
 import 'package:zomie_app/Services/WebRTC/Models/RTCMessage.dart';
 import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCConsumer.dart';
-import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCConsumer2.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocket.dart';
-import 'package:zomie_app/Services/WebRTC/Utils/WRTCUtils.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 
 class WRTCSocketEvent {
@@ -73,23 +69,17 @@ class WRTCSocketEvent {
         if (data["room_id"] == WRTCService.instance().room.id) {}
 
         Producer producer = Producer.fromJson(data["producer"]);
-        WRTCConsumerEvent wrtcConsumerEvent = WRTCConsumerEvent.init();
         RTCMessage rtcMessage = RTCMessage.init();
         // --------------------------------------------------- join room
         if (data["type"] == "join") {
-          // wrtcConsumerEvent = new WRTCConsumerEvent(
-          //     producer: producer, type: RoomEventType.join_room);
           rtcMessage = RTCMessage(
               producer: producer,
               messsage: producer.name + " join the room",
               type: WRTCMessageType.join_room);
-
           newProducerJoin(data['producers']);
         }
         // --------------------------------------------------- leave room
         if (data["type"] == "leave") {
-          // wrtcConsumerEvent = new WRTCConsumerEvent(
-          //     producer: producer, type: RoomEventType.leave_room);
           rtcMessage = RTCMessage(
               producer: producer,
               messsage: producer.name + " leave the room",
@@ -99,8 +89,6 @@ class WRTCSocketEvent {
         }
         // --------------------------------------------------- update data
         if (data["type"] == "update") {
-          // wrtcConsumerEvent = new WRTCConsumerEvent(
-          //     producer: producer, type: RoomEventType.update_data);
           WRTCService.instance()
               .wrtcConsumer2!
               .UpdateConsumer(producer: producer);
@@ -111,9 +99,6 @@ class WRTCSocketEvent {
         }
 
         // ---------------- Adding event
-        if (wrtcConsumerEvent.type != RoomEventType.none) {
-          WRTCConsumerBloc.instance.input.add(wrtcConsumerEvent);
-        }
         if (rtcMessage.type != WRTCMessageType.none) {
           WRTCMessageBloc.instance().input.add(rtcMessage);
         }
@@ -128,25 +113,6 @@ class WRTCSocketEvent {
       UpdateDataToServer();
     });
     // -------------------------------------------------------------------------
-  }
-
-  static Future<void> _AddCandidateToConsumers(
-      {required Candidate candidate, required String consumer_id}) async {
-    try {
-      for (int i = 0; i < WRTCConsumerBloc.instance.rtcConsumers.length; i++) {
-        if (WRTCConsumerBloc.instance.rtcConsumers[i].id == consumer_id &&
-            WRTCConsumerBloc.instance.rtcConsumers[i].peer != null) {
-          print("@@@@@@@@@@@@@@@@ add consumer candidate from server");
-          await WRTCConsumerBloc.instance.rtcConsumers[i].peer!.addCandidate(
-              new RTCIceCandidate(candidate.candidate, candidate.sdpMid,
-                  candidate.sdpMLineIndex));
-          print("----------------------------------");
-          break;
-        }
-      }
-    } catch (e) {
-      print(e);
-    }
   }
 
   static Future<void> UpdateDataToServer() async {
@@ -199,7 +165,7 @@ class WRTCSocketEvent {
     }
 
     if (WRTCService.instance().wrtcConsumer2 == null) {
-      WRTCService.instance().wrtcConsumer2 = new WRTCConsumer2(
+      WRTCService.instance().wrtcConsumer2 = new WRTCConsumer(
           currentProducerId: WRTCService.instance().producer.id);
     }
     if (WRTCService.instance().wrtcConsumer2!.peer == null) {
