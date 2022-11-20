@@ -14,12 +14,14 @@ Server using star topology & SFU(Selective Forwarding Unit) method for routing.
   - :heavy_exclamation_mark: Linux (not tested yet)
   - :heavy_exclamation_mark: Mac (not tested yet)
   
-#SS apps
+#SS Apps
 
 - Desktop-windows
 <img src="ss/Capture.PNG" width="370">
-<img src="ss/Capture2.PNG" width="370">
 <img src="ss/Capture4.PNG" width="370">
+
+- Mobile-Android
+<img src="ss/Capture6.PNG" height="300">
 
 - Web browser
 <img src="ss/Capture5.PNG" width="370">
