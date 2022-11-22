@@ -15,7 +15,7 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
   - Room meeting
      - chat room
      - video & audio communication
-     - share screen (on development)
+     - share screen (:heavy_exclamation_mark: on development)
   
 - Tested platform status
   - :heavy_check_mark: Android (tested)
