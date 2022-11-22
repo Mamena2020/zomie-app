@@ -7,7 +7,7 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
 - Features
   - Create Room 
      - life time (default 1 minute)
-       - after life time if there is no one in room, room will destroy itself
+       - after life time & if there is no one in room, then room will destroy itself
      - password (optional)
   - Lobby
      - preparing for meeting
