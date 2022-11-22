@@ -2,7 +2,7 @@
 
 Online meeting app like google meet, build with flutter for all platforms.
 this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time communication, and <a href="https://socket.io">socket.io</a> for signaling & messaging.
-<a href="https://github.com/Mamena2020/zomie-server"> Server<a> running in nodejs with SFU method.
+<a href="https://github.com/Mamena2020/zomie-server"> Server<a> running on nodejs with SFU method.
 
 - Features
   - Create Room 
