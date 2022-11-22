@@ -4,6 +4,19 @@ Online meeting app like google meet, build with flutter for all platforms.
 this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time communication, and <a href="https://socket.io">socket.io</a> for signaling & messaging.
 <a href="https://github.com/Mamena2020/zomie-server"> Server<a> running in nodejs with SFU method.
 
+- Features
+  - Create Room 
+     - life time (default 1 minute)
+       - after life time if there is no one in room, room will destroy itself
+     - password (optional)
+  - Lobby
+     - preparing for meeting
+       - permission for microphone & camera
+  - Room meeting
+     - chat room
+     - video & audio communication
+     - share screen (on development)
+  
 - Tested platform status
   - :heavy_check_mark: Android (tested)
   - :heavy_check_mark: Windows (tested)
