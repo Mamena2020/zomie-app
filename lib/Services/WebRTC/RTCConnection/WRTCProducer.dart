@@ -19,19 +19,23 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 
 class WRTCProducer {
   Producer producer;
-
   CallType callType;
-
   String room_id;
-
+  ProducerType producerType;
   RTCPeerConnection? peer;
+  // bool isConnected = false;
+  ValueNotifier<bool> isConnected = ValueNotifier(false);
+
   MediaStream? stream;
   RTCVideoRenderer videoRenderer = new RTCVideoRenderer();
   StreamController<MediaStream> _streamController =
       StreamController<MediaStream>.broadcast();
 
   WRTCProducer(
-      {this.room_id = "", required this.producer, required this.callType}) {
+      {required this.room_id,
+      required this.producer,
+      required this.producerType,
+      required this.callType}) {
     this.videoRenderer.initialize();
   }
 
@@ -46,8 +50,7 @@ class WRTCProducer {
   Future<void> CameraOnOff() async {
     if (producer.hasMedia.video) {
       try {
-        print("video disabl2e2d");
-
+        print("p-disabled video");
         if (this.stream!.getVideoTracks().isNotEmpty) {
           if (kIsWeb || TargetPlatform.windows == defaultTargetPlatform) {
             this.stream!.getVideoTracks()[0].enabled = false;
@@ -56,30 +59,18 @@ class WRTCProducer {
             this.stream!.getVideoTracks()[0].enabled = false;
           }
         }
-        // this.stream!.getVideoTracks().forEach((track) async {
-        //   await this.stream!.removeTrack(track);
-        //   await track.stop();
-        // });
-
-        // var newStream = await WRTCUtils.GetUserMedia(callType,
-        //     audio: true, video: false); // get new media with no video camera
-        // newStream.getAudioTracks()[0].enabled = isAudioOn;
-        // newStream.getTracks().forEach((track) {
-        //   this.stream!.addTrack(track);
-        // });
-
         producer.hasMedia.video = false;
       } catch (e) {
         print(e);
-        print("///////////////////// - error disabled video");
+        print("p-///////////////////// - error disabled video");
       }
     } else {
       try {
-        print("ena22ble vide");
+        print("p-enable video");
         if (kIsWeb || TargetPlatform.windows == defaultTargetPlatform) {
           var newStream = await WRTCUtils.GetUserMedia(callType);
           this.stream = newStream;
-          newStream.getAudioTracks()[0].enabled = producer.hasMedia.audio;
+          newStream!.getAudioTracks()[0].enabled = producer.hasMedia.audio;
           newStream.getTracks().forEach((track) async {
             await this.peer!.getSenders().then((sender) {
               sender.forEach((e) async {
@@ -95,7 +86,7 @@ class WRTCProducer {
         await _addStreamCoroller();
       } catch (e) {
         print(e);
-        print("///////////////////// - error enabled video");
+        print("p-///////////////////// - error enabled video");
       }
     }
   }
@@ -105,10 +96,21 @@ class WRTCProducer {
   bool firstConnect = false;
 
   GetUserMedia() async {
-    print("get user media");
+    print("p-get user media");
     producer.hasMedia = HasMedia.init();
     this.stream = await WRTCUtils.GetUserMedia(callType);
-    this.videoRenderer.srcObject = this.stream!;
+    if (this.stream != null) {
+      this.videoRenderer.srcObject = this.stream!;
+    }
+  }
+
+  GetDisplayMedia() async {
+    print("p-get user media");
+    producer.hasMedia = HasMedia.init();
+    this.stream = await WRTCUtils.GetDisplayMedia();
+    if (this.stream != null) {
+      this.videoRenderer.srcObject = this.stream!;
+    }
   }
 
   /**
@@ -117,8 +119,16 @@ class WRTCProducer {
   Future<void> CreateConnection() async {
     candidates.clear();
     if (this.stream == null) {
-      await GetUserMedia();
+      if (this.callType == CallType.screenSharing) {
+        await GetDisplayMedia();
+      } else {
+        await GetUserMedia();
+      }
     }
+    if (this.stream == null) {
+      return;
+    }
+
     this.peer = await createPeerConnection(
         WRTCCOnfig.configurationPeerConnection, WRTCCOnfig.offerSdpConstraints);
 
@@ -132,7 +142,8 @@ class WRTCProducer {
     _setTrack();
 
     //----------------- process handshake
-    // renegitiaion needed allways call wen gettrack it trigger to addtrack
+    // renegitiaion needed allways call wen setTrack it trigger to addtrack
+    // await _onRenegotiationNeeded();
     this.peer!.onRenegotiationNeeded = () async {
       // if (!firstConnect) {
       await _onRenegotiationNeeded();
@@ -145,7 +156,7 @@ class WRTCProducer {
       try {
         if (this.peer != null) {
           var connectionStatus2 = this.peer!.iceConnectionState;
-          print("Producer: " +
+          print("p-Producer: " +
               this.producer.id +
               " - " +
               connectionStatus2.toString());
@@ -158,9 +169,9 @@ class WRTCProducer {
 
   _onRenegotiationNeeded() async {
     // try {
-    // var offer = await this.peer!.createOffer({'offerToReceiveVideo': 1});
 
     String _platform = "";
+    isConnected.value = false;
     if (kIsWeb) {
       _platform = "web";
     } else {
@@ -181,8 +192,10 @@ class WRTCProducer {
       "sdp": sdp,
       "room_id": this.room_id,
       "use_sdp_transform": true,
+      "type": this.producerType.name,
       "producer_id": this.producer.id,
-      "producer_name": this.producer.name,
+      "user_id": this.producer.user_id,
+      "user_name": this.producer.name,
       "has_video": this.producer.hasMedia.video,
       "has_audio": this.producer.hasMedia.audio,
       "platform": _platform
@@ -194,41 +207,39 @@ class WRTCProducer {
             },
             body: bodyParams)
         .catchError((e) {
-      print("!!!!!! error call api");
+      print("p-!!!!!! error call api");
     });
 
     if (res.statusCode == 200) {
+      isConnected.value = true;
+
       var body = await jsonDecode(res.body);
-      this.producer.id = body["data"]["producer_id"] ?? '';
-      this.producer.name = body["data"]["producer_name"] ?? '';
-      room_id = body["data"]["room_id"] ?? '';
       await WRTCUtils.SetRemoteDescriptionFromJson(
           peer: peer!, sdpRemote: body["data"]["sdp"]);
-      print("@@@ success set remote");
+      print("p-@@@ success set remote producer");
       _AddCandidatesToServer();
-      List<dynamic> _prodDynamic =
-          await body["data"]["producers"] as List<dynamic>;
-      List<Producer> producers = await List<Producer>.from(
-          _prodDynamic.map((e) => Producer.fromJson(e)));
+      // List<dynamic> _prodDynamic =
+      //     await body["data"]["producers"] as List<dynamic>;
+      // List<Producer> producers = await List<Producer>.from(
+      //     _prodDynamic.map((e) => Producer.fromJson(e)));
       // WRTCService.instance()
       //     .AddConsumers(producers: producers, room_id: room_id);
     }
     // } catch (e) {
-    //   print("error _onRenegotiationNeeded");
+    //   print("p-error _onRenegotiationNeeded");
     //   print(e);
     // }
   }
 
   _setTrack() {
     try {
+      print("p-~~~~~~~~~~set track: stream id: " + this.stream!.id);
       this.stream!.getTracks().forEach((track) async {
-        print("~~~~~~~~~~gettrack");
-
         await this.peer!.addTrack(track, this.stream!);
         _addStreamCoroller();
       });
     } catch (e) {
-      print("!!!!!!!!!!! error set track media stream");
+      print("p-!!!!!!!!!!! error set track media stream");
       print(e);
     }
   }
@@ -245,9 +256,9 @@ class WRTCProducer {
     try {
       var connectionStatus = this.peer!.connectionState;
       if (["disconnected", "failed", "closed"].contains(connectionStatus)) {
-        print("disconnected");
+        print("p-disconnected");
       } else {
-        print("Connected");
+        print("p-Connected");
         if (defaultTargetPlatform != TargetPlatform.windows) {
           Fluttertoast.showToast(
               msg: "Connected",
@@ -267,7 +278,7 @@ class WRTCProducer {
   _onIceCandidate() {
     this.peer!.onIceCandidate = (e) {
       if (e.candidate != null) {
-        print("fire candidate to stored in candidates");
+        print("p-fire candidate to stored in candidates");
 
         candidates.add(Candidate(
             candidate: e.candidate!,
@@ -279,7 +290,7 @@ class WRTCProducer {
 
   _AddCandidatesToServer() {
     for (var c in this.candidates) {
-      print("add candidate to server");
+      print("p-add candidate to server");
       WRTCSocketEvent.addProducerCandidateToServer(
           producer_id: this.producer.id, candidate: c);
     }
@@ -338,7 +349,7 @@ class WRTCProducer {
             onTap: () async {
               await WRTCService.instance().MuteUnMuted();
               if (onChange != null) {
-                print("audio status:" +
+                print("p-audio status:" +
                     WRTCService.instance().isAudioOn.toString());
                 onChange();
               }
@@ -443,7 +454,7 @@ class WRTCProducer {
         this.peer = null;
       }
     } catch (e) {
-      print("error on dispose");
+      print("p-error on dispose");
       print(e);
     }
   }

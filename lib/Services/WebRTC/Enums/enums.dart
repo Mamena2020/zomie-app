@@ -5,7 +5,7 @@ enum SdpType {
 
 // enum RTCConnectType { create, join }
 
-enum CallType { videoCall, audioCall }
+enum CallType { videoCall, audioCall, screenSharing }
 
 enum RoomEventType { join_room, leave_room, update_data, none }
 
@@ -18,3 +18,5 @@ enum WRTCMessageType {
   stop_screen,
   none
 }
+
+enum ProducerType { user, screen }

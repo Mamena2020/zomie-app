@@ -11,21 +11,26 @@ import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCConsumer.dart';
 import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCProducer.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/SocketEvent.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocket.dart';
+import 'package:zomie_app/Services/WebRTC/Utils/WRTCUtils.dart';
 
 class WRTCService {
   bool inCall = false;
+  bool isShareScreen = false;
   //------------------------------ room
   Room room = Room.init();
   //------------------------------ producer
   WRTCProducer? wrtcProducer;
+  WRTCProducer? wrtcShareScreen;
+
   Producer producer = Producer.initGenerate();
 
-  WRTCConsumer? wrtcConsumer2 = WRTCConsumer(currentProducerId: "");
+  WRTCConsumer? wrtcConsumer;
   WRTCService._() {
     WRTCSocket.instance();
     WRTCSocketEvent.Listen();
-    wrtcConsumer2 = WRTCConsumer(currentProducerId: this.producer.id);
-    wrtcConsumer2!.init();
+    producer.user_id = WRTCUtils.uuidV4();
+    wrtcConsumer = WRTCConsumer(currentProducer: this.producer);
+    wrtcConsumer!.init();
   }
   static WRTCService? _singleton = new WRTCService._();
 
@@ -130,17 +135,18 @@ class WRTCService {
     return responseApi;
   }
 
-  void InitProducer({String? room_id, String? producer_name}) {
+  Future<void> InitProducer({String? room_id, String? user_name}) async {
     if (room_id != null) {
       this.room.id = room_id;
     }
-    if (producer_name != null) {
-      this.producer.name = producer_name;
+    if (user_name != null) {
+      this.producer.name = user_name;
     }
 
     this.wrtcProducer = new WRTCProducer(
         room_id: this.room.id,
         producer: this.producer,
+        producerType: ProducerType.user,
         callType: CallType.videoCall);
   }
 
@@ -148,12 +154,15 @@ class WRTCService {
       {required String room_id, String? room_password}) async {
     try {
       if (this.wrtcProducer == null) {
-        InitProducer(room_id: room_id);
+        await InitProducer(room_id: room_id);
       }
       await this.wrtcProducer!.CreateConnection();
-      if (this.wrtcProducer!.producer.id != null) {
-        this.inCall = true;
-      }
+      // if (this.wrtcProducer!.isConnected) {
+      //   this.inCall = true;
+      //   print("Successful join room");
+      // } else {
+      //   print("failed to join the room");
+      // }
     } catch (e) {
       print(e);
     }
@@ -175,6 +184,22 @@ class WRTCService {
     }
   }
 
+  Future<void> StartShareScreen() async {
+    if (this.wrtcShareScreen == null) {
+      Producer _producer = Producer.copy(this.producer);
+      _producer.id = WRTCUtils.uuidV4();
+      this.wrtcShareScreen = WRTCProducer(
+          producer: _producer,
+          room_id: this.room.id,
+          producerType: ProducerType.screen,
+          callType: CallType.screenSharing);
+    }
+    await this.wrtcShareScreen!.CreateConnection();
+    // if (this.wrtcShareScreen!.isConnected) {
+    //   this.isShareScreen = true;
+    // }
+  }
+
   /// Using this in dispose
   /// ```dart
   /// @override
@@ -187,9 +212,9 @@ class WRTCService {
   /// ```
   Future<void> EndCall() async {
     try {
-      if (this.wrtcConsumer2 != null) {
-        await this.wrtcConsumer2!.Dispose();
-        // this.wrtcConsumer2 = null;
+      if (this.wrtcConsumer != null) {
+        await this.wrtcConsumer!.Dispose();
+        // this.wrtcConsumer = null;
       }
 
       if (this.wrtcProducer != null) {

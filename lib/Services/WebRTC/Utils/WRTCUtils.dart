@@ -11,7 +11,7 @@ class WRTCUtils {
     return _uuid.v4();
   }
 
-  static Future<MediaStream> GetUserMedia(CallType callType,
+  static Future<MediaStream?> GetUserMedia(CallType callType,
       {bool video = true, bool audio = true}) async {
     final Map<String, dynamic> constraints = callType == CallType.videoCall
         ? {
@@ -27,15 +27,25 @@ class WRTCUtils {
             'video': false,
           };
 
-    MediaStream stream = await navigator.mediaDevices.getUserMedia(constraints);
+    MediaStream? stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (e) {
+      print(e);
+    }
 
     return stream;
   }
 
-  static GetUserScreen({bool video = true, bool audio = true}) async {
+  static Future<MediaStream?> GetDisplayMedia(
+      {bool video = true, bool audio = false}) async {
     final Map<String, dynamic> constraints = {'audio': audio, 'video': video};
-    MediaStream stream =
-        await navigator.mediaDevices.getDisplayMedia(constraints);
+    MediaStream? stream;
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia(constraints);
+    } catch (e) {
+      print(e);
+    }
     return stream;
   }
 

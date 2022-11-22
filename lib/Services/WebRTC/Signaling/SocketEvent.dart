@@ -16,10 +16,24 @@ class WRTCSocketEvent {
       try {
         print("consumer-sdp-from-server");
         // print(data["sdp"]);
-        if (WRTCService.instance().wrtcConsumer2! != null) {
+        if (WRTCService.instance().wrtcConsumer! != null) {
           WRTCService.instance()
-              .wrtcConsumer2!
+              .wrtcConsumer!
               .RenegotiationNeeded(sdpRemote: data["sdp"]);
+        }
+      } catch (e) {
+        print("error producer-sdp-from-server");
+        print(e);
+      }
+    });
+    // ------------------------------------------------------------------------- consumer sdp from server
+    WRTCSocket.instance().socket.on("consumer-update-from-server",
+        (data) async {
+      try {
+        print("consumer-update-from-server");
+        // print(data["sdp"]);
+        if (WRTCService.instance().wrtcConsumer! != null) {
+          WRTCService.instance().wrtcConsumer!.UpdateConsumerStream();
         }
       } catch (e) {
         print("error producer-sdp-from-server");
@@ -29,15 +43,27 @@ class WRTCSocketEvent {
     // ------------------------------------------------------------------------- candidate producer
     WRTCSocket.instance().socket.on("producer-candidate-from-server", (data) {
       try {
-        if (WRTCService.instance().wrtcProducer! != null &&
+        var _candidate = new RTCIceCandidate(
+            data["candidate"]["candidate"].toString(),
+            data["candidate"]["sdpMid"].toString(),
+            int.parse(data["candidate"]["sdpMLineIndex"].toString()));
+
+        if (data["type"] == "user" &&
+            WRTCService.instance().wrtcProducer != null &&
             WRTCService.instance().wrtcProducer!.peer != null &&
-            data["producer_id"] ==
-                WRTCService.instance().wrtcProducer!.producer.id) {
-          WRTCService.instance().wrtcProducer!.peer!.addCandidate(
-              new RTCIceCandidate(
-                  data["candidate"]["candidate"].toString(),
-                  data["candidate"]["sdpMid"].toString(),
-                  int.parse(data["candidate"]["sdpMLineIndex"].toString())));
+            WRTCService.instance().wrtcProducer!.producer.id ==
+                data["producer_id"]) {
+          WRTCService.instance().wrtcProducer!.peer!.addCandidate(_candidate);
+        }
+        if (data["type"] == "screen" &&
+            WRTCService.instance().wrtcShareScreen != null &&
+            WRTCService.instance().wrtcShareScreen!.peer != null &&
+            WRTCService.instance().wrtcShareScreen!.producer.id ==
+                data["producer_id"]) {
+          WRTCService.instance()
+              .wrtcShareScreen!
+              .peer!
+              .addCandidate(_candidate);
         }
       } catch (e) {
         print("error set candidate from server");
@@ -47,9 +73,9 @@ class WRTCSocketEvent {
     // ------------------------------------------------------------------------- candidate consumers
     WRTCSocket.instance().socket.on("consumer-candidate-from-server", (data) {
       try {
-        if (WRTCService.instance().wrtcConsumer2 != null) {
+        if (WRTCService.instance().wrtcConsumer != null) {
           print("candidate consumer");
-          WRTCService.instance().wrtcConsumer2!.peer!.addCandidate(
+          WRTCService.instance().wrtcConsumer!.peer!.addCandidate(
               new RTCIceCandidate(
                   data["candidate"]["candidate"].toString(),
                   data["candidate"]["sdpMid"].toString(),
@@ -66,7 +92,9 @@ class WRTCSocketEvent {
     WRTCSocket.instance().socket.on("producer-event", (data) async {
       try {
         print("event " + data["type"]);
-        if (data["room_id"] == WRTCService.instance().room.id) {}
+        if (data["room_id"] != WRTCService.instance().room.id) {
+          return;
+        }
 
         Producer producer = Producer.fromJson(data["producer"]);
         RTCMessage rtcMessage = RTCMessage.init();
@@ -90,7 +118,7 @@ class WRTCSocketEvent {
         // --------------------------------------------------- update data
         if (data["type"] == "update") {
           WRTCService.instance()
-              .wrtcConsumer2!
+              .wrtcConsumer!
               .UpdateConsumer(producer: producer);
         }
         // --------------------------------------------------- seed message
@@ -160,23 +188,24 @@ class WRTCSocketEvent {
   }
 
   static Future<void> newProducerJoin(dynamic data) async {
-    if (!WRTCService.instance().inCall) {
-      return;
-    }
+    // if (!WRTCService.instance().inCall) {
+    //   return;
+    // }
 
-    if (WRTCService.instance().wrtcConsumer2 == null) {
-      WRTCService.instance().wrtcConsumer2 = new WRTCConsumer(
-          currentProducerId: WRTCService.instance().producer.id);
+    if (WRTCService.instance().wrtcConsumer == null) {
+      WRTCService.instance().wrtcConsumer = new WRTCConsumer(
+        currentProducer: WRTCService.instance().producer,
+      );
     }
-    if (WRTCService.instance().wrtcConsumer2!.peer == null) {
-      await WRTCService.instance().wrtcConsumer2!.init();
+    if (WRTCService.instance().wrtcConsumer!.peer == null) {
+      await WRTCService.instance().wrtcConsumer!.init();
     }
 
     List<Producer> producers = await List<Producer>.from(
         data.map((e) => Producer.fromJson(e)).toList());
 
     await WRTCService.instance()
-        .wrtcConsumer2!
+        .wrtcConsumer!
         .UpdateConsumers(producers: producers);
 
     WRTCSocket.instance().socket.emit(

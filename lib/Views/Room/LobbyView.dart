@@ -19,6 +19,7 @@ class _LobbyViewState extends State<LobbyView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       PrepareForMeeting();
+      ListenToJoinRoom();
     });
   }
 
@@ -28,6 +29,17 @@ class _LobbyViewState extends State<LobbyView> {
     await WRTCService.instance().wrtcProducer!.GetUserMedia();
     setState(() {
       isLoad = true;
+    });
+  }
+
+  ListenToJoinRoom() {
+    WRTCService.instance().wrtcProducer!.isConnected.addListener(() {
+      if (WRTCService.instance().wrtcProducer!.isConnected.value) {
+        WRTCService.instance().inCall = true;
+      }
+      if (widget.onJoin != null) {
+        widget.onJoin();
+      }
     });
   }
 
@@ -193,6 +205,7 @@ class _LobbyViewState extends State<LobbyView> {
                   room_password:
                       widget.roomInfo.password ? tecPassword.text : null);
               if (WRTCService.instance().inCall) {
+                print("JOIN SUCCESS");
                 widget.onJoin();
               }
             }

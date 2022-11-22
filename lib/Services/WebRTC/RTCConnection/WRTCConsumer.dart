@@ -11,7 +11,7 @@ import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocket.dart';
 import 'package:zomie_app/Services/WebRTC/Utils/WRTCUtils.dart';
 
 class WRTCConsumer {
-  String currentProducerId;
+  Producer currentProducer;
 
   RTCPeerConnection? peer;
 
@@ -20,7 +20,9 @@ class WRTCConsumer {
   StreamController<List<ConsumerM>> consumerStream =
       StreamController<List<ConsumerM>>.broadcast();
 
-  WRTCConsumer({required this.currentProducerId}) {}
+  WRTCConsumer({
+    required this.currentProducer,
+  }) {}
 
   init() async {
     this.peer = await createPeerConnection(
@@ -31,7 +33,7 @@ class WRTCConsumer {
     this.peer!.addTransceiver(
         kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
         init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly));
-    getTrack();
+    onTrack();
   }
 
   /**
@@ -47,7 +49,7 @@ class WRTCConsumer {
       try {
         if (this.peer != null) {
           var connectionStatus2 = this.peer!.iceConnectionState;
-          print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Consumer: - " +
+          print("c-c. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Consumer: - " +
               connectionStatus2.toString());
         }
       } catch (e) {
@@ -70,20 +72,20 @@ class WRTCConsumer {
       var sdp = await WRTCUtils.sdpToJsonString(desc: _desc!);
       // print(sdp);
       var data = {
-        "producer_id": this.currentProducerId,
+        "producer_id": this.currentProducer.id,
         "sdp": sdp,
       };
 
       WRTCSocket.instance().socket.emit("consumer-sdp", data);
     } catch (e) {
-      print("error _onRenegotiationNeeded");
+      print("c-error _onRenegotiationNeeded");
       print(e);
     }
   }
 
   // _onIceCandidate() {
   //   try {
-  //     print(".................................<<<");
+  //     print("c-.................................<<<");
   //     this.peer!.onIceCandidate = (e) async {
   //       if (e.candidate != null) {
   //         _candidateClient.add({
@@ -100,16 +102,16 @@ class WRTCConsumer {
   //         //   }
   //         // };
   //         // var json = await jsonEncode(candidate);
-  //         // print("consumer candidate from client");
+  //         // print("c-consumer candidate from client");
   //         // print(json);
-  //         // print("end -consumer candidate from client");
+  //         // print("c-end -consumer candidate from client");
 
   //         // SocketService.instance.socket
   //         //     .emit("consumer-candidate-from-client", json);
   //       }
   //     };
   //   } catch (e) {
-  //     print("error local candidate");
+  //     print("c-error local candidate");
   //     print(e);
   //   }
   // }
@@ -124,11 +126,12 @@ class WRTCConsumer {
   }
 
   UpdateConsumers({required List<Producer> producers}) async {
-    print("update consumers");
+    print("c-update consumers");
     //-------------------------------------------- remove current producer
     List<ConsumerM> newConsumersM = [];
     for (int i = 0; i < producers.length; i++) {
-      if (producers[i].id == this.currentProducerId) {
+      // if (producers[i].id == this.currentProducerId ||  producers[i].user_id == ) {
+      if (producers[i].user_id == this.currentProducer.user_id) {
         await producers.removeAt(i);
         i--;
       } else {
@@ -167,10 +170,10 @@ class WRTCConsumer {
       }
 
       this.consumers.clear();
-      print("clear all consumers");
+      print("c-clear all consumers");
       return;
     }
-    print("show remove");
+    print("c-should remove");
 
     bool exist = false;
     String _id = "";
@@ -186,7 +189,7 @@ class WRTCConsumer {
         }
       }
       if (!exist) {
-        print("remove old");
+        print("c-remove old");
         this.consumers[i].Dispose();
         this.consumers.removeAt(i);
         i--;
@@ -194,50 +197,33 @@ class WRTCConsumer {
     }
   }
 
+  Future<void> UpdateConsumerStream() async {
+    print("c- update consumer streams");
+    try {
+      if (this.peer != null && this.peer!.getRemoteStreams() != null) {
+        this.peer!.getRemoteStreams().forEach((e) {
+          if (e != null) {
+            setTrack(e);
+          }
+        });
+      }
+    } catch (e) {
+      print(e);
+      print("c-!!!!!!!!!!! error update consumers media stream");
+    }
+  }
+
   Map<String, String> _tamp = {};
 
-  getTrack() {
+  onTrack() {
     try {
-      // this.peer!.onAddStream = (e) {
-      //   print("on add stream");
-      //   setTrack(e);
-      // };
-      // this.peer!.onRemoveStream = (e) async {
-      //   print("on remove stream");
-      //   this.consumers.removeWhere((c) => c.StreamId() == e.id);
-      //   await _streamEvent();
-      // };
-
       this.peer!.onTrack = (e) {
-        if (kIsWeb) {
-          print("-- on track: " + e.streams.first.id);
-          if (!_tamp.containsKey(e.streams.first.id)) {
-            _tamp.addAll({e.streams.first.id: e.streams.first.id});
-          } else {
-            _tamp.remove(e.streams.first.id);
-            setTrack(e.streams.first);
-          }
-        }
-
-        // e.streams.first.onAddTrack = (e2) {
-        //   print("on add track");
-        // };
-        // e.streams.first.onRemoveTrack = (e2) {
-        //   print("on add track");
-        // };
-      };
-      this.peer!.onAddTrack = (stream, track) {
-        print("on add track");
-        setTrack(stream);
-      };
-
-      this.peer!.onRemoveTrack = (stream, track) async {
-        print("on remove track");
-        this.consumers.removeWhere((e) => e.StreamId() == stream.id);
-        await SetStreamEvent();
+        e.track.onEnded = () async {
+          removeTrack(e.streams.first);
+        };
       };
     } catch (e) {
-      print("!!!!!!!!!!! error get track media stream");
+      print("c-!!!!!!!!!!! error on track media stream");
       print(e);
     }
   }
@@ -250,13 +236,28 @@ class WRTCConsumer {
     }
   }
 
+  removeTrack(MediaStream e) async {
+    this.consumers.removeWhere((c) => c.StreamId() == e.id);
+    await SetStreamEvent();
+  }
+
   SetStreamEvent() async {
     if (consumerStream.isClosed) {
       consumerStream = new StreamController<List<ConsumerM>>.broadcast();
     }
     consumerStream.sink.add(this.consumers);
-    print("consumers stream");
+    print("c-consumers stream");
     print(this.consumers.length);
+    printConsumers();
+  }
+
+  printConsumers() {
+    this.consumers.forEach((e) {
+      print("c-====================");
+      print("c-id: " + e.producer.id);
+      print("c-name: " + e.producer.name);
+      print("c-user_id: " + e.producer.user_id);
+    });
   }
 
   Widget Show({required double height, required double width}) {
@@ -288,7 +289,7 @@ class WRTCConsumer {
             return Center(child: Text("Something wrong"));
           }
           return SizedBox(
-            child: Center(child: Text("There is no one but you")),
+            child: Center(child: Text("Invite others to join you :)")),
           );
         });
   }
@@ -310,7 +311,7 @@ class WRTCConsumer {
         this.peer = null;
       }
     } catch (e) {
-      print("error on dispose");
+      print("c-error on dispose");
       print(e);
     }
   }

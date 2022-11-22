@@ -1,10 +1,8 @@
 # zomie
 
 Online meeting app like google meet, build with flutter for all platforms.
-this app uses webrtc for media streaming, and io sockets for signaling & messaging.
-<a href="https://github.com/Mamena2020/zomie-server"> Server<a> running in nodejs. Each client will have 2 active peer, 1 for broadcasting &
-1 as consumer for listen to all user in the room. 
-Server using star topology & SFU(Selective Forwarding Unit) method for routing.
+this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time communication, and <a href="https://socket.io">socket.io</a> for signaling & messaging.
+<a href="https://github.com/Mamena2020/zomie-server"> Server<a> running in nodejs with SFU method.
 
 - Tested platform status
   - :heavy_check_mark: Android (tested)
@@ -47,29 +45,29 @@ Server using star topology & SFU(Selective Forwarding Unit) method for routing.
 - none
 
 
-#Note
+# Note
 
 - Socket io  
   - Platform
     - All Platform
-  - version info match [1]
+  - version match info [1]
     ```
       - server(nodejs): "socket.io": "^2.4.1"
       - client(flutter):  socket_io_client: ^1.0.1 | ^1.0.2
     ```
-  - version info match [2]
+  - version match info [2]
     ```
       - server(nodejs): "socket.io": "^4.5.3"
       - client(flutter):  socket_io_client: ^2.0.0
     ```
 - WebRTC 
-  - Android, Windows, Web
+  - Support Platform
+    - Android, Windows, Web
   
-- Flutter Code 
-  - App Life Cycle 
-    - https://www.reddit.com/r/FlutterDev/comments/l7wqb2/flutter_tutorial_detect_app_background_app_closed/ 
+ 
 
-#References
+
+# References
 
 - Socket Io
   - Issues
@@ -95,3 +93,6 @@ Server using star topology & SFU(Selective Forwarding Unit) method for routing.
        - https://stackoverflow.com/questions/39831238/webrtc-how-to-change-the-audio-track-for-a-existing-stream
        - https://stackoverflow.com/questions/64012898/how-to-completely-turn-off-camera-on-mediastream-javascript
       ```
+- Flutter Code 
+  - App Life Cycle 
+    - https://www.reddit.com/r/FlutterDev/comments/l7wqb2/flutter_tutorial_detect_app_background_app_closed/
