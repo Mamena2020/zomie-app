@@ -26,8 +26,8 @@ class WRTCSocketEvent {
         print(e);
       }
     });
-    // ------------------------------------------------------------------------- consumer sdp from server
-    WRTCSocket.instance().socket.on("consumer-update-from-server",
+    // ------------------------------------------------------------------------- consumer update from server
+    WRTCSocket.instance().socket.on("consumer-update-client-stream",
         (data) async {
       try {
         print("consumer-update-from-server");
