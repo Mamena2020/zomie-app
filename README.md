@@ -1,4 +1,5 @@
 # zomie
+:heavy_exclamation_mark: the project continues on branch 1peer :heavy_exclamation_mark:
 
 Online meeting app like google meet, build with flutter for all platforms.
 this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time communication, and <a href="https://socket.io">socket.io</a> for signaling & messaging.
