@@ -70,7 +70,20 @@ class ConsumerM {
                         this._videoRenderer.srcObject = snapshot.data!;
                         return _show();
                       }
-                      return Center(child: CircularProgressIndicator());
+                      return Center(
+                          child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            this._mediaStream == null ? "NULL" : "EXIST",
+                            style: TextStyle(color: Colors.teal),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        ],
+                      ));
                     } else {
                       if (snapshot.hasData) {
                         this._mediaStream = snapshot.data!;

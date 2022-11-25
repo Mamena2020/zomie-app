@@ -1,5 +1,5 @@
 class WRTCCOnfig {
-  static const host = "http://192.168.1.10:5000";
+  static const host = "http://192.168.1.5:5000";
 
   static const configurationPeerConnection = {
     "sdpSemantics": "unified-plan", // Add this line for support windows

@@ -209,9 +209,11 @@ class _LobbyViewState extends State<LobbyView> {
                 widget.onJoin();
               }
             }
-            setState(() {
-              joinPressing = false;
-            });
+            if (mounted) {
+              setState(() {
+                joinPressing = false;
+              });
+            }
           }
         },
         child: joinPressing

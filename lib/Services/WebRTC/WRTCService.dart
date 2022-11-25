@@ -24,13 +24,13 @@ class WRTCService {
 
   Producer producer = Producer.initGenerate();
 
-  WRTCConsumer? wrtcConsumer;
+  // WRTCConsumer? wrtcConsumer;
   WRTCService._() {
     WRTCSocket.instance();
     WRTCSocketEvent.Listen();
     producer.user_id = WRTCUtils.uuidV4();
-    wrtcConsumer = WRTCConsumer(currentProducer: this.producer);
-    wrtcConsumer!.init();
+    // wrtcConsumer = WRTCConsumer(currentProducer: this.producer);
+    // wrtcConsumer!.init();
   }
   static WRTCService? _singleton = new WRTCService._();
 
@@ -212,10 +212,10 @@ class WRTCService {
   /// ```
   Future<void> EndCall() async {
     try {
-      if (this.wrtcConsumer != null) {
-        await this.wrtcConsumer!.Dispose();
-        // this.wrtcConsumer = null;
-      }
+      // if (this.wrtcConsumer != null) {
+      //   await this.wrtcConsumer!.Dispose();
+      //   // this.wrtcConsumer = null;
+      // }
 
       if (this.wrtcProducer != null) {
         var data = {

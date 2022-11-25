@@ -42,9 +42,9 @@ class WRTCConsumer {
   Future<void> CreateConnection() async {
     await RenegotiationNeeded();
     //----------------- process handshake
-    this.peer!.onRenegotiationNeeded = () async {
-      RenegotiationNeeded();
-    };
+    // this.peer!.onRenegotiationNeeded = () async {
+    //   // RenegotiationNeeded();
+    // };
     this.peer!.onIceConnectionState = (e) {
       try {
         if (this.peer != null) {
@@ -64,7 +64,7 @@ class WRTCConsumer {
 
       await WRTCUtils.SetRemoteDescriptionFromJson(
           peer: this.peer!, sdpRemote: sdpRemote);
-      var answer = await this.peer!.createAnswer({'offerToReceiveVideo': 1});
+      var answer = await this.peer!.createAnswer();
 
       await this.peer!.setLocalDescription(answer);
 
@@ -200,12 +200,15 @@ class WRTCConsumer {
   Future<void> UpdateConsumerStream() async {
     print("c- update consumer streams");
     try {
-      if (this.peer != null && this.peer!.getRemoteStreams() != null) {
-        this.peer!.getRemoteStreams().forEach((e) {
-          if (e != null) {
-            setTrack(e);
-          }
-        });
+      if (this.peer != null) {
+        var _remoteStream = await this.peer!.getRemoteStreams();
+        if (_remoteStream != null) {
+          _remoteStream.forEach((e) {
+            if (e != null) {
+              setTrack(e);
+            }
+          });
+        }
       }
     } catch (e) {
       print(e);
@@ -217,11 +220,11 @@ class WRTCConsumer {
 
   onTrack() {
     try {
-      this.peer!.onTrack = (e) {
-        e.track.onEnded = () async {
-          removeTrack(e.streams.first);
-        };
-      };
+      // this.peer!.onTrack = (e) {
+      //   e.track.onEnded = () async {
+      //     // removeTrack(e.streams.first);
+      //   };
+      // };
     } catch (e) {
       print("c-!!!!!!!!!!! error on track media stream");
       print(e);
@@ -231,6 +234,7 @@ class WRTCConsumer {
   setTrack(MediaStream e) async {
     int i = this.consumers.indexWhere((c) => c.producer.stream_id == e.id);
     if (i >= 0) {
+      print("c-add track");
       await this.consumers[i].AddMediaStream(e);
       await SetStreamEvent();
     }

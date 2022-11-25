@@ -237,7 +237,8 @@ class WRTCMessageBloc {
 
   _SendMessage() async {
     if (_tecMessage.text.isNotEmpty) {
-      var event = await WRTCSocketEvent.SendMessage(message: _tecMessage.text);
+      var event = await WRTCSocketEvent.NotifyServer(
+          message: _tecMessage.text, type: NotifyType.message);
       if (event.messsage != "") {
         input.add(event);
         _tecMessage.clear();

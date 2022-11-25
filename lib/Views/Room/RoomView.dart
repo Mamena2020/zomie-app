@@ -43,8 +43,8 @@ class _RoomViewState extends State<RoomView> {
           color: Colors.white,
           child: Stack(children: [
             WRTCService.instance()
-                .wrtcConsumer!
-                .Show(height: height, width: width),
+                .wrtcProducer!
+                .ShowConsumer(height: height, width: width),
             Actions(),
             width > 550
                 ? Row(
@@ -166,7 +166,17 @@ class _RoomViewState extends State<RoomView> {
                 onPressed: () async {
                   await WRTCService.instance().StartShareScreen();
                 },
-                icon: Icon(Icons.screen_share))
+                icon: Icon(Icons.screen_share)),
+            IconButton(
+                onPressed: () async {
+                  await WRTCService.instance()
+                      .wrtcProducer!
+                      .UpdateConsumerStream();
+                },
+                icon: Icon(
+                  Icons.check,
+                  color: Colors.teal,
+                ))
           ],
         ),
       ),
@@ -228,7 +238,7 @@ class _RoomViewState extends State<RoomView> {
 
   Widget producerMedia() {
     double _size = width > height ? width : height;
-    if (WRTCService.instance().wrtcConsumer!.consumers.length > 2) {
+    if (WRTCService.instance().wrtcProducer!.consumers.length > 2) {
       _size = _size * 0.1;
     } else {
       _size = _size * 0.15;
