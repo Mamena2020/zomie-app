@@ -351,34 +351,10 @@ class WRTCProducer {
     this.videoRenderer.srcObject = this.stream!;
   }
 
-  // _onIceConnectionState() {
-  //   try {
-  //     var connectionStatus = this.peer!.connectionState;
-  //     if (["disconnected", "failed", "closed"].contains(connectionStatus)) {
-  //       print("p-disconnected");
-  //     } else {
-  //       print("p-Connected");
-  //       if (defaultTargetPlatform != TargetPlatform.windows) {
-  //         Fluttertoast.showToast(
-  //             msg: "Connected",
-  //             toastLength: Toast.LENGTH_LONG,
-  //             gravity: ToastGravity.CENTER,
-  //             timeInSecForIosWeb: 1,
-  //             backgroundColor: Colors.green,
-  //             textColor: Colors.white,
-  //             fontSize: 16.0);
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
-
   _onIceCandidate() {
     this.peer!.onIceCandidate = (e) {
       if (e.candidate != null) {
         print("p-fire candidate to stored in candidates");
-
         candidates.add(Candidate(
             candidate: e.candidate!,
             sdpMid: e.sdpMid!,
@@ -673,12 +649,6 @@ class WRTCProducer {
             }
           });
         }
-        // var r = await this.peer!.getReceivers();
-        // r.forEach((e) {
-        //   var _str = new uhtml.MediaStream() as MediaStream;
-        //   _str.addTrack(e.track!);
-        //   setTrack(_str);
-        // });
       }
     } catch (e) {
       print(e);
@@ -687,6 +657,7 @@ class WRTCProducer {
   }
 
   setTrack(MediaStream e) async {
+    print("stream id:" + e.id);
     int i = this.consumers.indexWhere((c) => c.producer.stream_id == e.id);
     if (i >= 0) {
       print("c-add track");

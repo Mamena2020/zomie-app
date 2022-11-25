@@ -7,7 +7,6 @@ import 'package:zomie_app/Services/WebRTC/Models/Producer.dart';
 import 'package:zomie_app/Services/WebRTC/Models/ResponseApi.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
 import 'package:zomie_app/Services/WebRTC/Models/RoomInfo.dart';
-import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCConsumer.dart';
 import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCProducer.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/SocketEvent.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocket.dart';
@@ -24,13 +23,10 @@ class WRTCService {
 
   Producer producer = Producer.initGenerate();
 
-  // WRTCConsumer? wrtcConsumer;
   WRTCService._() {
     WRTCSocket.instance();
     WRTCSocketEvent.Listen();
     producer.user_id = WRTCUtils.uuidV4();
-    // wrtcConsumer = WRTCConsumer(currentProducer: this.producer);
-    // wrtcConsumer!.init();
   }
   static WRTCService? _singleton = new WRTCService._();
 
