@@ -324,6 +324,25 @@ class WRTCProducer {
     }
   }
 
+  handleNewUserJoin(
+    dynamic sdp,
+  ) async {
+    await WRTCUtils.SetRemoteDescriptionFromJson(peer: peer!, sdpRemote: sdp);
+
+    var answer = await this.peer!.createAnswer();
+    await this.peer!.setLocalDescription(answer);
+
+    var _desc = await this.peer!.getLocalDescription();
+    var localSdp = await WRTCUtils.sdpToJsonString(desc: _desc!);
+
+    var data = {
+      "producer_id": this.producer.id,
+      "sdp": localSdp,
+    };
+
+    WRTCSocket.instance().socket.emit("negotiation-sdp", data);
+  }
+
   _addStreamCoroller() {
     if (_streamController.isClosed) {
       _streamController = StreamController<MediaStream>.broadcast();

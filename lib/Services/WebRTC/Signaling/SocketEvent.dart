@@ -40,6 +40,20 @@ class WRTCSocketEvent {
     //     print(e);
     //   }
     // });
+    WRTCSocket.instance().socket.on("new-user-join-from-server", (data) async {
+      try {
+        print("new-user-join-from-server");
+        if (WRTCService.instance().wrtcProducer != null &&
+            WRTCService.instance().wrtcProducer!.peer != null &&
+            WRTCService.instance().wrtcProducer!.producer.id ==
+                data["producer_id"]) {
+          WRTCService.instance().wrtcProducer!.handleNewUserJoin(data["sdp"]);
+        }
+      } catch (e) {
+        print("error new-user-join-from-server");
+        print(e);
+      }
+    });
     // ------------------------------------------------------------------------- candidate producer
     WRTCSocket.instance().socket.on("producer-candidate-from-server", (data) {
       try {
@@ -105,9 +119,14 @@ class WRTCSocketEvent {
               messsage: producer.name + " join the room",
               type: WRTCMessageType.join_room);
           // newProducerJoin(data['producers']);
+          List<Producer> producers = await List<Producer>.from(
+              data["producers"].map((e) => Producer.fromJson(e)).toList());
           WRTCService.instance()
               .wrtcProducer!
-              .onRenegotiationNeededEvent(producer.id, "join");
+              .UpdateConsumers(producers: producers);
+          // WRTCService.instance()
+          //     .wrtcProducer!
+          //     .onRenegotiationNeededEvent(producer.id, "join");
         }
         // --------------------------------------------------- leave room
         if (data["type"] == "leave") {
@@ -116,9 +135,9 @@ class WRTCSocketEvent {
               messsage: producer.name + " leave the room",
               type: WRTCMessageType.leave_room);
           if (WRTCService.instance().wrtcProducer!.peer != null) {
-            WRTCService.instance()
-                .wrtcProducer!
-                .onRenegotiationNeededEvent(producer.id, "leave");
+            // WRTCService.instance()
+            //     .wrtcProducer!
+            //     .onRenegotiationNeededEvent(producer.id, "leave");
           }
         }
         // --------------------------------------------------- update data
