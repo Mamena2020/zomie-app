@@ -23,7 +23,7 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
 - Tested platform status
   - :heavy_check_mark: Android (tested)
   - :heavy_check_mark: Windows (tested)
-     - :heavy_exclamation_mark: Share sreen (not working yet) 
+     - :heavy_exclamation_mark: Share screen (not working yet) 
   - :heavy_check_mark: Web (tested)
   - :heavy_exclamation_mark: Ios (not tested yet)
   - :heavy_exclamation_mark: Linux (not tested yet)
