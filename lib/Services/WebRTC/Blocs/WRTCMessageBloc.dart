@@ -4,7 +4,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:zomie_app/Services/WebRTC/Enums/enums.dart';
 import 'package:zomie_app/Services/WebRTC/Models/RTCMessage.dart';
-import 'package:zomie_app/Services/WebRTC/Signaling/SocketEvent.dart';
+import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocketEvent.dart';
+import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocketFunction.dart';
+import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 
 class WRTCMessageBloc {
   List<RTCMessage> messages = [];
@@ -237,8 +239,11 @@ class WRTCMessageBloc {
 
   _SendMessage() async {
     if (_tecMessage.text.isNotEmpty) {
-      var event = await WRTCSocketEvent.NotifyServer(
-          message: _tecMessage.text, type: NotifyType.message);
+      var event = await WRTCSocketFunction.NotifyServer(
+          message: _tecMessage.text,
+          type: NotifyType.message,
+          producer_id: WRTCService.instance().producer.id,
+          room_id: WRTCService.instance().room.id);
       if (event.messsage != "") {
         input.add(event);
         _tecMessage.clear();

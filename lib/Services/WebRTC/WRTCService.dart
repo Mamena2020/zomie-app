@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:zomie_app/Services/WebRTC/Blocs/WRTCMessageBloc.dart';
 import 'package:zomie_app/Services/WebRTC/Config/WRTCConfig.dart';
@@ -8,7 +10,8 @@ import 'package:zomie_app/Services/WebRTC/Models/ResponseApi.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
 import 'package:zomie_app/Services/WebRTC/Models/RoomInfo.dart';
 import 'package:zomie_app/Services/WebRTC/RTCConnection/WRTCProducer.dart';
-import 'package:zomie_app/Services/WebRTC/Signaling/SocketEvent.dart';
+import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocketEvent.dart';
+import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocketFunction.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocket.dart';
 import 'package:zomie_app/Services/WebRTC/Utils/WRTCUtils.dart';
 
@@ -26,7 +29,6 @@ class WRTCService {
   WRTCService._() {
     WRTCSocket.instance();
     WRTCSocketEvent.Listen();
-    producer.user_id = WRTCUtils.uuidV4();
   }
   static WRTCService? _singleton = new WRTCService._();
 
@@ -153,12 +155,9 @@ class WRTCService {
         await InitProducer(room_id: room_id);
       }
       await this.wrtcProducer!.CreateConnection();
-      // if (this.wrtcProducer!.isConnected) {
-      //   this.inCall = true;
-      //   print("Successful join room");
-      // } else {
-      //   print("failed to join the room");
-      // }
+      if (this.wrtcProducer!.isConnected.value) {
+        this.inCall = true;
+      }
     } catch (e) {
       print(e);
     }
@@ -168,7 +167,7 @@ class WRTCService {
   Future<void> MuteUnMuted() async {
     if (this.wrtcProducer != null) {
       await this.wrtcProducer!.MuteUnMute();
-      await WRTCSocketEvent.UpdateDataToServer();
+      await WRTCSocketFunction.UpdateDataToServer();
     }
   }
 
@@ -176,24 +175,80 @@ class WRTCService {
   Future<void> CameraOnOff() async {
     if (this.wrtcProducer != null) {
       await this.wrtcProducer!.CameraOnOff();
-      await WRTCSocketEvent.UpdateDataToServer();
+      await WRTCSocketFunction.UpdateDataToServer();
     }
   }
 
   Future<void> StartShareScreen() async {
-    if (this.wrtcShareScreen == null) {
-      Producer _producer = Producer.copy(this.producer);
-      _producer.id = WRTCUtils.uuidV4();
-      this.wrtcShareScreen = WRTCProducer(
-          producer: _producer,
-          room_id: this.room.id,
-          producerType: ProducerType.screen,
-          callType: CallType.screenSharing);
-    }
+    Producer _producerScreen = await Producer.initGenerate();
+    _producerScreen.user_id == this.producer.user_id;
+    _producerScreen.name == this.producer.name;
+
+    this.wrtcShareScreen = new WRTCProducer(
+        producer: _producerScreen,
+        room_id: this.room.id,
+        producerType: ProducerType.screen,
+        callType: CallType.screenSharing);
+
     await this.wrtcShareScreen!.CreateConnection();
-    // if (this.wrtcShareScreen!.isConnected) {
-    //   this.isShareScreen = true;
-    // }
+    if (this.wrtcShareScreen!.isConnected.value) {
+      this.isShareScreen = true;
+    }
+  }
+
+  Future<void> StopShareScreen() async {
+    await this.wrtcShareScreen!.Dispose();
+    this.wrtcShareScreen = null;
+    this.isShareScreen = false;
+  }
+
+  Widget ShareScreenButton({Function? onChange}) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(50),
+        child: new BackdropFilter(
+          filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+          child: InkWell(
+            onTap: () async {
+              if (this.wrtcShareScreen != null) {
+                await StopShareScreen();
+              } else {
+                await StartShareScreen();
+              }
+              if (onChange != null) {
+                onChange();
+              }
+            },
+            child: new Container(
+              width: 35.0,
+              height: 35.0,
+              decoration: new BoxDecoration(
+                color: !this.isShareScreen
+                    ? Colors.grey.shade200.withOpacity(0.3)
+                    : Colors.blue.shade800.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(50),
+                boxShadow: [
+                  new BoxShadow(
+                      color: isShareScreen
+                          ? Colors.blue.withOpacity(0.5)
+                          : Colors.black.withOpacity(0.5),
+                      blurRadius: 10.0,
+                      spreadRadius: 10),
+                ],
+              ),
+              child: new Center(
+                child: Icon(
+                  Icons.screen_share,
+                  color: isShareScreen ? Colors.blue.shade700 : Colors.white,
+                  size: 17,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   /// Using this in dispose
@@ -208,17 +263,18 @@ class WRTCService {
   /// ```
   Future<void> EndCall() async {
     try {
-      // if (this.wrtcConsumer != null) {
-      //   await this.wrtcConsumer!.Dispose();
-      //   // this.wrtcConsumer = null;
-      // }
-
       if (this.wrtcProducer != null) {
-        var data = {
-          "room_id": this.room.id,
-          "producer_id": this.wrtcProducer!.producer.id
-        };
-        WRTCSocket.instance().socket.emit("end-call", data);
+        var _producer_id_screen = this.wrtcShareScreen != null
+            ? (this.wrtcShareScreen!.producer.id)
+            : '';
+        WRTCSocketFunction.endCall(
+            producer_id: this.producer.id,
+            producer_id_screen: _producer_id_screen,
+            room_id: this.room.id);
+        if (this.wrtcShareScreen != null) {
+          this.wrtcShareScreen!.Dispose();
+        }
+
         this.wrtcProducer!.Dispose();
         // this.wrtcProducer = null;
       }

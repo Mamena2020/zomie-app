@@ -20,10 +20,10 @@ class Producer {
       id: origin.id,
       user_id: origin.user_id,
       name: origin.name,
-      stream_id: '',
+      stream_id: origin.stream_id,
       hasMedia: HasMedia.copy(origin.hasMedia));
 
-  factory Producer.fromJson(Map<dynamic, dynamic> json) => Producer(
+  factory Producer.fromJson(Map<dynamic, dynamic> json) => new Producer(
       id: json["id"] ?? '',
       user_id: json["user_id"] ?? '',
       name: json["name"] ?? '',
@@ -35,7 +35,7 @@ class Producer {
       id: "", user_id: "", name: "", stream_id: '', hasMedia: HasMedia.init());
   factory Producer.initGenerate() => Producer(
       id: WRTCUtils.uuidV4(),
-      user_id: "",
+      user_id: WRTCUtils.uuidV4(),
       stream_id: '',
       name: "User-" + WRTCUtils.uuidV4().substring(0, 5),
       hasMedia: HasMedia.init());

@@ -186,51 +186,54 @@ class _LobbyViewState extends State<LobbyView> {
   ResponseApi responseRoom = ResponseApi.init();
   bool joinPressing = false;
   Widget JoinButton() {
-    return SizedBox(
-      height: 40,
-      width: 100,
-      child: ElevatedButton(
-        onPressed: () async {
-          if (!joinPressing) {
-            setState(() {
-              joinPressing = true;
-            });
-            responseRoom = await WRTCService.instance().CheckRoom(
-                room_id: widget.roomInfo.id,
-                room_password:
-                    widget.roomInfo.password ? tecPassword.text : null);
-            if (responseRoom.status_code == 200) {
-              await WRTCService.instance().JoinCall(
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SizedBox(
+        height: 40,
+        width: 100,
+        child: ElevatedButton(
+          onPressed: () async {
+            if (!joinPressing) {
+              setState(() {
+                joinPressing = true;
+              });
+              responseRoom = await WRTCService.instance().CheckRoom(
                   room_id: widget.roomInfo.id,
                   room_password:
                       widget.roomInfo.password ? tecPassword.text : null);
-              if (WRTCService.instance().inCall) {
-                print("JOIN SUCCESS");
-                widget.onJoin();
+              if (responseRoom.status_code == 200) {
+                await WRTCService.instance().JoinCall(
+                    room_id: widget.roomInfo.id,
+                    room_password:
+                        widget.roomInfo.password ? tecPassword.text : null);
+                if (WRTCService.instance().inCall) {
+                  print("JOIN SUCCESS");
+                  widget.onJoin();
+                }
+              }
+              if (mounted) {
+                setState(() {
+                  joinPressing = false;
+                });
               }
             }
-            if (mounted) {
-              setState(() {
-                joinPressing = false;
-              });
-            }
-          }
-        },
-        child: joinPressing
-            ? Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
+          },
+          child: joinPressing
+              ? Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                  ),
+                )
+              : Text(
+                  "Join now",
+                  style: TextStyle(color: Colors.white),
                 ),
-              )
-            : Text(
-                "Join now",
-                style: TextStyle(color: Colors.white),
-              ),
-        style: ElevatedButton.styleFrom(
-          // shape: CircleBorder(),
-          padding: EdgeInsets.all(10),
-          backgroundColor: Colors.teal, // <-- Button color
-          // foregroundColor: Colors.red, // <-- Splash color
+          style: ElevatedButton.styleFrom(
+            // shape: CircleBorder(),
+            padding: EdgeInsets.all(10),
+            backgroundColor: Colors.teal, // <-- Button color
+            // foregroundColor: Colors.red, // <-- Splash color
+          ),
         ),
       ),
     );

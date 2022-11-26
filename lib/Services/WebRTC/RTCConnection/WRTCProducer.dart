@@ -11,7 +11,8 @@ import 'package:zomie_app/Services/WebRTC/Models/Candidate.dart';
 import 'package:zomie_app/Services/WebRTC/Models/ConsumerM.dart';
 import 'package:zomie_app/Services/WebRTC/Models/HasMedia.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Producer.dart';
-import 'package:zomie_app/Services/WebRTC/Signaling/SocketEvent.dart';
+import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocketEvent.dart';
+import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocketFunction.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocket.dart';
 import 'package:zomie_app/Services/WebRTC/Utils/WRTCUtils.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
@@ -25,7 +26,6 @@ class WRTCProducer {
   String room_id;
   ProducerType producerType;
   RTCPeerConnection? peer;
-  // bool isConnected = false;
   ValueNotifier<bool> isConnected = ValueNotifier(false);
 
   MediaStream? stream;
@@ -146,7 +146,8 @@ class WRTCProducer {
         kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
         init: RTCRtpTransceiverInit(direction: TransceiverDirection.SendRecv));
 
-    onTrack();
+    // onTrack();
+
     await _setTrack();
 
     //----------------- process handshake
@@ -179,53 +180,6 @@ class WRTCProducer {
     };
   }
 
-/**
- * type -> join | leave
- */
-  onRenegotiationNeededEvent(String producer_id_target, String type) async {
-    print("onRenegotiationNeededEvent");
-    var offer = await this
-        .peer!
-        .createOffer({'offerToReceiveVideo': 1, 'offerToReceiveAudio': 1});
-    // var offer = await this.peer!.createOffer();
-
-    await this.peer!.setLocalDescription(offer);
-
-    var _desc = await peer!.getLocalDescription();
-    var sdp = await WRTCUtils.sdpToJsonString(desc: _desc!);
-
-    String bodyParams = "";
-    String url = "";
-    url = WRTCCOnfig.host + "/renegotiation";
-    bodyParams = await jsonEncode({
-      "sdp": sdp,
-      "producer_id": this.producer.id,
-      "producer_id_target": producer_id_target,
-      "type": type
-    });
-    final res = await http.Client()
-        .post(Uri.parse(url),
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: bodyParams)
-        .catchError((e) {
-      print("p-!!!!!! error call api");
-    });
-
-    if (res.statusCode == 200) {
-      var body = await jsonDecode(res.body);
-      await _AddCandidatesToServer();
-      await WRTCUtils.SetRemoteDescriptionFromJson(
-          peer: peer!, sdpRemote: body["data"]["sdp"]);
-      print("p-@@@ success set remote producer nego event - " + type);
-      List<Producer> producers = await List<Producer>.from(
-          body["data"]["producers"].map((e) => Producer.fromJson(e)).toList());
-      await UpdateConsumers(producers: producers);
-      await UpdateConsumerStream();
-    }
-  }
-
   _sdpProccess() async {
     // try {
 
@@ -237,9 +191,7 @@ class WRTCProducer {
       _platform = defaultTargetPlatform.name;
     }
 
-    var offer = await this
-        .peer!
-        .createOffer({'offerToReceiveVideo': 1, 'offerToReceiveAudio': 1});
+    var offer = await this.peer!.createOffer({'offerToReceiveVideo': 1});
     // var offer = await this.peer!.createOffer();
     await this.peer!.setLocalDescription(offer);
 
@@ -262,6 +214,7 @@ class WRTCProducer {
       "has_audio": this.producer.hasMedia.audio,
       "platform": _platform
     });
+
     final res = await http.Client()
         .post(Uri.parse(url),
             headers: {
@@ -280,12 +233,12 @@ class WRTCProducer {
           peer: peer!, sdpRemote: body["data"]["sdp"]);
       print("p-@@@ success set remote producer");
       await _AddCandidatesToServer();
-
-      WRTCSocketEvent.NotifyServer(type: NotifyType.join);
-      List<Producer> producers = await List<Producer>.from(
-          body["data"]["producers"].map((e) => Producer.fromJson(e)).toList());
-      await UpdateConsumers(producers: producers);
-      await UpdateConsumerStream();
+      WRTCSocketFunction.NotifyServer(
+          type: this.producerType == ProducerType.screen
+              ? NotifyType.start_screen
+              : NotifyType.join,
+          producer_id: this.producer.id,
+          room_id: this.room_id);
     }
     // } catch (e) {
     //   print("p-error _onRenegotiationNeeded");
@@ -293,25 +246,26 @@ class WRTCProducer {
     // }
   }
 
-  onTrack() {
-    try {
-      // this.peer!.onTrack = (e) {
-      //   e.track.onEnded = () async {
-      //     // removeTrack(e.streams.first);
-      //   };
-      // };
-      print("ON TRACK media stream");
-    } catch (e) {
-      print("c-!!!!!!!!!!! error on track media stream");
-      print(e);
-    }
-  }
+  // onTrack() {
+  //   try {
+  //     // this.peer!.onTrack = (e) {
+  //     //   e.track.onEnded = () async {
+  //     //     // removeTrack(e.streams.first);
+  //     //   };
+  //     // };
+  //     print("ON TRACK media stream");
+  //   } catch (e) {
+  //     print("c-!!!!!!!!!!! error on track media stream");
+  //     print(e);
+  //   }
+  // }
 
   _setTrack() async {
     try {
       print("p-~~~~~~~~~~set track: stream id: " + this.stream!.id);
       if (this.stream != null) {
         for (var track in this.stream!.getTracks()) {
+          print("Add track for " + this.producerType.name);
           await this.peer!.addTrack(track, this.stream!).catchError((er) {
             print("error set track");
           });
@@ -324,23 +278,22 @@ class WRTCProducer {
     }
   }
 
-  handleNewUserJoin(
+  handleSdpFromServer(
     dynamic sdp,
   ) async {
-    await WRTCUtils.SetRemoteDescriptionFromJson(peer: peer!, sdpRemote: sdp);
+    try {
+      await WRTCUtils.SetRemoteDescriptionFromJson(peer: peer!, sdpRemote: sdp);
 
-    var answer = await this.peer!.createAnswer();
-    await this.peer!.setLocalDescription(answer);
+      var answer = await this.peer!.createAnswer();
+      await this.peer!.setLocalDescription(answer);
 
-    var _desc = await this.peer!.getLocalDescription();
-    var localSdp = await WRTCUtils.sdpToJsonString(desc: _desc!);
-
-    var data = {
-      "producer_id": this.producer.id,
-      "sdp": localSdp,
-    };
-
-    WRTCSocket.instance().socket.emit("negotiation-sdp", data);
+      var _desc = await this.peer!.getLocalDescription();
+      var localSdp = await WRTCUtils.sdpToJsonString(desc: _desc!);
+      WRTCSocketFunction.sdpToServer(
+          producer_id: this.producer.id, sdp: localSdp);
+    } catch (e) {
+      print(e);
+    }
   }
 
   _addStreamCoroller() {
@@ -366,7 +319,7 @@ class WRTCProducer {
   _AddCandidatesToServer() async {
     for (var c in this.candidates) {
       print("p-add candidate to server");
-      await WRTCSocketEvent.addProducerCandidateToServer(
+      await WRTCSocketFunction.addCandidateToServer(
           producer_id: this.producer.id, candidate: c);
       this.candidates.clear();
     }
@@ -666,10 +619,10 @@ class WRTCProducer {
     }
   }
 
-  removeTrack(MediaStream e) async {
-    this.consumers.removeWhere((c) => c.StreamId() == e.id);
-    await SetStreamEvent();
-  }
+  // removeTrack(MediaStream e) async {
+  //   this.consumers.removeWhere((c) => c.StreamId() == e.id);
+  //   await SetStreamEvent();
+  // }
 
   SetStreamEvent() async {
     if (consumerStream.isClosed) {

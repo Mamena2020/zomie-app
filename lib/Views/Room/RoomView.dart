@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zomie_app/Router/RouterService.dart';
 import 'package:zomie_app/Services/WebRTC/Blocs/WRTCMessageBloc.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
+import 'package:zomie_app/Services/WebRTC/Widgets/WIdgets.dart';
 
 class RoomView extends StatefulWidget {
   RoomView({
@@ -77,36 +78,11 @@ class _RoomViewState extends State<RoomView> {
                               }))
                     ],
                   ),
-            Chat()
+            // Chat
           ]),
         ),
       ),
     );
-  }
-
-  Widget Chat() {
-    return !WRTCMessageBloc.instance().isShow
-        ? Align(
-            alignment: Alignment.bottomRight,
-            child: Padding(
-              padding: const EdgeInsets.all(15),
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    WRTCMessageBloc.instance().isShow = true;
-                  });
-                },
-                child: Icon(Icons.chat_bubble, color: Colors.white),
-                style: ElevatedButton.styleFrom(
-                  shape: CircleBorder(),
-                  padding: EdgeInsets.all(20),
-                  backgroundColor: Colors.teal, // <-- Button color
-                  // foregroundColor: Colors.red, // <-- Splash color
-                ),
-              ),
-            ),
-          )
-        : SizedBox();
   }
 
   Widget Actions() {
@@ -121,62 +97,17 @@ class _RoomViewState extends State<RoomView> {
             WRTCService.instance().wrtcProducer!.ShowMicIcon(onChange: () {
               setState(() {});
             }),
-            // -------------------------------------------------------------------- endcall
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: InkWell(
-                  onTap: () async {
-                    String destination =
-                        "/room/" + WRTCService.instance().room.id;
-                    await WRTCService.instance().EndCall();
-                    RouteService.router
-                        .navigateTo(context, destination, replace: true);
-                  },
-                  child: new Container(
-                    width: 50.0,
-                    height: 40.0,
-                    decoration: new BoxDecoration(
-                      color: Colors.red.shade700,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        new BoxShadow(
-                            color: Colors.black,
-                            blurRadius: 10.0,
-                            spreadRadius: 10),
-                      ],
-                    ),
-                    child: new Center(
-                      child: Icon(
-                        Icons.call_end,
-                        color: Colors.white,
-                        size: 25,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
             // -------------------------------------------------------------------- camera
             WRTCService.instance().wrtcProducer!.ShowCameraIcon(onChange: () {
               setState(() {});
             }),
-            IconButton(
-                onPressed: () async {
-                  await WRTCService.instance().StartShareScreen();
-                },
-                icon: Icon(Icons.screen_share)),
-            IconButton(
-                onPressed: () async {
-                  await WRTCService.instance()
-                      .wrtcProducer!
-                      .UpdateConsumerStream();
-                },
-                icon: Icon(
-                  Icons.check,
-                  color: Colors.teal,
-                ))
+            // -------------------------------------------------------------------- endcall
+            WRTCWidgets.EndCallButton(context: context),
+            // -------------------------------------------------------------------- screen share
+            WRTCService.instance().ShareScreenButton(),
+            WRTCWidgets.ChatButton(onTap: () {
+              setState(() {});
+            })
           ],
         ),
       ),

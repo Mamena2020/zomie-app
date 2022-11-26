@@ -14,13 +14,16 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
      - preparing for meeting
        - permission for microphone & camera
   - Room meeting
-     - chat room
      - video & audio communication
-     - share screen (:heavy_exclamation_mark: on development)
+        - muted/unmuted microphone
+        - turn on/off camera
+     - chat room
+     - Share screen 
   
 - Tested platform status
   - :heavy_check_mark: Android (tested)
   - :heavy_check_mark: Windows (tested)
+     - :heavy_exclamation_mark: Share sreen (not working yet) 
   - :heavy_check_mark: Web (tested)
   - :heavy_exclamation_mark: Ios (not tested yet)
   - :heavy_exclamation_mark: Linux (not tested yet)
@@ -37,6 +40,8 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
 
 - Web browser
 <img src="ss/Capture5.PNG" width="370">
+<img src="ss/Capture7.PNG" width="370">
+<img src="ss/Capture8.PNG" width="370">
 
 
 
@@ -76,7 +81,7 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
     ```
 - WebRTC 
   - Support Platform
-    - Android, Windows, Web
+    - All Platform
   
  
 
@@ -91,6 +96,7 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
   - Articles | Doc
     - https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
     - https://bloggeek.me/webrtc-vs-zoom-video-quality/
+    - https://bloggeek.me/webrtcglossary/rtp/
     - https://webrtchacks.com/zoom-avoids-using-webrtc/
     - https://stackoverflow.com/questions/56944864/can-we-remove-and-add-audio-stream-dynamically-in-webrtc-video-call-without-rene
     - https://stackoverflow.com/questions/64012898/how-to-completely-turn-off-camera-on-mediastream-javascript

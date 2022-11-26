@@ -5,6 +5,7 @@ import 'package:zomie_app/Services/WebRTC/Models/Candidate.dart';
 import 'package:zomie_app/Services/WebRTC/Models/ConsumerM.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Producer.dart';
 import 'package:zomie_app/Services/WebRTC/Models/RTCMessage.dart';
+import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocketFunction.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocket.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 
@@ -31,24 +32,34 @@ class WRTCSocketEvent {
         print(e);
       }
     });
-    // ------------------------------------------------------------------------- consumer sdp from server
+    // -------------------------------------------------------------------------  sdp from server
 
-    WRTCSocket.instance().socket.on("new-user-join-from-server", (data) async {
+    WRTCSocket.instance().socket.on("sdp-from-server", (data) async {
       try {
-        print("new-user-join-from-server " + data["producer_id"]);
-        if (WRTCService.instance().wrtcProducer != null &&
+        print("sdp-from-server " + data["producer_id"]);
+        if (data["type"] == "user" &&
+            WRTCService.instance().wrtcProducer != null &&
             WRTCService.instance().wrtcProducer!.peer != null &&
             WRTCService.instance().wrtcProducer!.producer.id ==
                 data["producer_id"]) {
-          WRTCService.instance().wrtcProducer!.handleNewUserJoin(data["sdp"]);
+          WRTCService.instance().wrtcProducer!.handleSdpFromServer(data["sdp"]);
+        }
+        if (data["type"] == "screen" &&
+            WRTCService.instance().wrtcShareScreen != null &&
+            WRTCService.instance().wrtcShareScreen!.peer != null &&
+            WRTCService.instance().wrtcShareScreen!.producer.id ==
+                data["producer_id"]) {
+          WRTCService.instance()
+              .wrtcShareScreen!
+              .handleSdpFromServer(data["sdp"]);
         }
       } catch (e) {
-        print("error new-user-join-from-server");
+        print("error sdp-from-server");
         print(e);
       }
     });
-    // ------------------------------------------------------------------------- candidate producer
-    WRTCSocket.instance().socket.on("producer-candidate-from-server", (data) {
+    // ------------------------------------------------------------------------- candidate
+    WRTCSocket.instance().socket.on("candidate-to-client", (data) {
       try {
         var _candidate = new RTCIceCandidate(
             data["candidate"]["candidate"].toString(),
@@ -78,9 +89,9 @@ class WRTCSocketEvent {
       }
     });
 
-    // ------------------------------------------------------------------------- socket event from server...
+    // ------------------------------------------------------------------------- notify from server...
     // type of notify: "join" | "leave" | "update" | "message" | "start_screen" | "stop_screen"
-    WRTCSocket.instance().socket.on("producer-event", (data) async {
+    WRTCSocket.instance().socket.on("notify-from-server", (data) async {
       try {
         print("event " + data["type"]);
         if (data["room_id"] != WRTCService.instance().room.id) {
@@ -137,56 +148,8 @@ class WRTCSocketEvent {
 
     // ------------------------------------------------------------------------- detect if socket reconnect
     WRTCSocket.instance().socket.on("connect", (_) {
-      UpdateDataToServer();
+      WRTCSocketFunction.UpdateDataToServer();
     });
     // -------------------------------------------------------------------------
-  }
-
-  static Future<void> UpdateDataToServer() async {
-    try {
-      if (WRTCService.instance().wrtcProducer != null &&
-          WRTCService.instance().inCall) {
-        Map _data = {
-          "socket_id": WRTCSocket.instance().socket.id,
-          "room_id": WRTCService.instance().room.id,
-          "producer": WRTCService.instance().producer.toJson(),
-        };
-        print(_data);
-        WRTCSocket.instance().socket.emit("update-data", _data);
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  static Future<RTCMessage> NotifyServer({
-    String message = "",
-    required NotifyType type,
-  }) async {
-    RTCMessage rtcMessage = RTCMessage.init();
-    try {
-      if (WRTCService.instance().wrtcProducer != null &&
-          WRTCService.instance().inCall) {
-        Map _data = {
-          "room_id": WRTCService.instance().room.id,
-          "producer_id": WRTCService.instance().producer.id,
-          "message": message,
-          "type": type.name
-        };
-        rtcMessage.producer = Producer.copy(WRTCService.instance().producer);
-        rtcMessage.messsage = message;
-        rtcMessage.type = WRTCMessageType.message;
-        WRTCSocket.instance().socket.emit("notify-server", _data);
-      }
-    } catch (e) {
-      print(e);
-    }
-    return rtcMessage;
-  }
-
-  static Future<void> addProducerCandidateToServer(
-      {required String producer_id, required Candidate candidate}) async {
-    Map _data = {"producer_id": producer_id, "candidate": candidate};
-    WRTCSocket.instance().socket.emit("producer-candidate-from-client", _data);
   }
 }

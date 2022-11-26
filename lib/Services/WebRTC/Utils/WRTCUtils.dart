@@ -38,10 +38,19 @@ class WRTCUtils {
   }
 
   static Future<MediaStream?> GetDisplayMedia(
-      {bool video = true, bool audio = false}) async {
-    final Map<String, dynamic> constraints = {'audio': audio, 'video': video};
+      {bool video = true,
+      bool audio = false,
+      ShareScreenType type = ShareScreenType.allScreen}) async {
+    Map<String, dynamic> constraints = {'audio': audio, 'video': video};
     MediaStream? stream;
+
     try {
+      if (type == ShareScreenType.allScreen) {
+        constraints = {
+          'audio': false,
+          'video': {'displaySurface': 'application'}
+        };
+      }
       stream = await navigator.mediaDevices.getDisplayMedia(constraints);
     } catch (e) {
       print(e);
