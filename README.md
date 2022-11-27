@@ -100,11 +100,15 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
     - https://webrtchacks.com/zoom-avoids-using-webrtc/
     - https://stackoverflow.com/questions/56944864/can-we-remove-and-add-audio-stream-dynamically-in-webrtc-video-call-without-rene
     - https://stackoverflow.com/questions/64012898/how-to-completely-turn-off-camera-on-mediastream-javascript
+    - bandwidth
+       - https://webrtc.github.io/samples/src/content/peerconnection/bandwidth/
+       - https://stackoverflow.com/questions/57653899/how-to-increase-the-bitrate-of-webrtc
+       - https://webrtchacks.com/limit-webrtc-bandwidth-sdp/
+       - https://stackoverflow.com/questions/16712224/how-to-control-bandwidth-in-webrtc-video-call
   - Issues
     - https://github.com/flutter-webrtc/flutter-webrtc/issues/938 windows rtc
     - https://github.com/flutter-webrtc/flutter-webrtc/issues/436 close conection
     - media stream, muted, stop camera
-      ```
        - https://stackoverflow.com/questions/63666576/how-restart-a-closed-video-track-stopped-using-userstream-getvideotracks0
        - https://stackoverflow.com/questions/57563002/do-cloned-streams-from-mediastreamdestination-are-still-somehow-bound-to-this-au
        - https://stackoverflow.com/questions/72857922/replace-webrtc-track-of-different-kind-without-renegotiations
@@ -112,7 +116,7 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
        - https://stackoverflow.com/questions/56944864/can-we-remove-and-add-audio-stream-dynamically-in-webrtc-video-call-without-rene
        - https://stackoverflow.com/questions/39831238/webrtc-how-to-change-the-audio-track-for-a-existing-stream
        - https://stackoverflow.com/questions/64012898/how-to-completely-turn-off-camera-on-mediastream-javascript
-      ```
+      
 - Flutter Code 
   - App Life Cycle 
     - https://www.reddit.com/r/FlutterDev/comments/l7wqb2/flutter_tutorial_detect_app_background_app_closed/

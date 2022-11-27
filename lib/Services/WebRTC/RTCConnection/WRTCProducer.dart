@@ -193,11 +193,14 @@ class WRTCProducer {
 
     var offer = await this.peer!.createOffer({'offerToReceiveVideo': 1});
     // var offer = await this.peer!.createOffer();
+    var offerWithBandwidth =
+        await WRTCUtils.SetBandwidthSdp(offer, this.producerType);
     await this.peer!.setLocalDescription(offer);
 
     var _desc = await peer!.getLocalDescription();
     var sdp = await WRTCUtils.sdpToJsonString(desc: _desc!);
-
+    // print("================ JSON STR");
+    // print(sdp);
     String bodyParams = "";
     String url = "";
     url = WRTCCOnfig.host + "/join-room";
@@ -232,6 +235,9 @@ class WRTCProducer {
       await WRTCUtils.SetRemoteDescriptionFromJson(
           peer: peer!, sdpRemote: body["data"]["sdp"]);
       print("p-@@@ success set remote producer");
+
+      await WRTCUtils.setBitrate(peer: this.peer!);
+
       await _AddCandidatesToServer();
       WRTCSocketFunction.NotifyServer(
           type: this.producerType == ProducerType.screen
@@ -270,6 +276,7 @@ class WRTCProducer {
             print("error set track");
           });
         }
+
         await _addStreamCoroller();
       }
     } catch (e) {
