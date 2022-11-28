@@ -13,6 +13,8 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
   - Lobby
      - preparing for meeting
        - permission for microphone & camera
+       - enter password (if required)
+       - change user name
   - Room meeting
      - video & audio communication
         - muted/unmuted microphone
@@ -29,9 +31,10 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
   
 - Tested platform status
   - :heavy_check_mark: Android (tested)
+  - :heavy_check_mark: Web (tested)
   - :heavy_check_mark: Windows (tested)
      - :heavy_exclamation_mark: Screen share (not working yet) 
-  - :heavy_check_mark: Web (tested)
+     - :heavy_exclamation_mark: WebCam light still on when camera turn off 
   - :heavy_exclamation_mark: Ios (not tested yet)
   - :heavy_exclamation_mark: Linux (not tested yet)
   - :heavy_exclamation_mark: Mac (not tested yet)
@@ -51,9 +54,34 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
 <img src="ss/Capture8.PNG" width="370">
 
 
+#How to use
+- create .env file
+   - cmd: cp .env.example .env
+   - fill in credentials
+- android config
+   - change "applicationId" 
+     - dir: (android/app/build.gradle) 
+     ```
+      defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId "com.example.zomie_app"
+     ```
+- build
+   - web
+      - canvas kit: flutter build web --web-renderer canvaskit --release
+      - html render: flutter build web --web-renderer html --release
+   - android (APK)
+      - flutter build apk --release             
+   - desktop windows
+      - flutter build windows
+- run debug
+   - web
+      - flutter run -d chrome
+   - android
+      - flutter run -d android
+   - desktop
+      - flutter run -d windows
 
-
-   
 #Flutter info
 
 - build with version.
@@ -65,11 +93,6 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
       minSdkVersion 23
       targetSdkVersion 33
     ```
-
-
-#Credential
-- none
-
 
 # Note
 

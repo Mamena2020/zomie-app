@@ -1,7 +1,7 @@
-class WRTCCOnfig {
-  static const host = "http://192.168.1.7:5000";
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-  // static const host = "https://zomie-server-production.up.railway.app";
+class WRTCCOnfig {
+  static String host = dotenv.env['MEDIA_SERVER_HOST'] ?? '';
 
   static const configurationPeerConnection = {
     "sdpSemantics": "unified-plan", // Add this line for support windows

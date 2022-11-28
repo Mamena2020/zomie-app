@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:zomie_app/Router/RouterService.dart';
 import 'package:zomie_app/Services/Socket/SocketService.dart';
 
@@ -9,6 +10,7 @@ class InitServices {
     WidgetsFlutterBinding.ensureInitialized();
   }
   Future<void> LoadAllServices() async {
+    await _Env();
     await _RouteServices();
     // await _SocketIo();
   }
@@ -23,6 +25,9 @@ class InitServices {
   Future<void> _SocketIo() async {
     await SocketService.instance;
   }
-  // ---------------------------------------------------------------------------
 
+  // --------------------------------------------------------------------------- env
+  Future<void> _Env() async {
+    await dotenv.load(fileName: ".env");
+  }
 }

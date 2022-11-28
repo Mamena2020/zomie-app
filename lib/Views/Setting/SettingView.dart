@@ -166,7 +166,7 @@ class _SettingViewState extends State<SettingView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Screen shere bitrate on the room",
+                "Screen share bitrate on the room",
                 style: TextStyle(fontSize: 13),
               ),
               _ScreenBitrateOption(),

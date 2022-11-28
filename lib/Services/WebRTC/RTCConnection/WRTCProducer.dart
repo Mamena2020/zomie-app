@@ -93,6 +93,11 @@ class WRTCProducer {
         print(e);
         print("p-///////////////////// - error enabled video");
       }
+      await WRTCUtils.setBitrate(
+          peer: this.peer!,
+          bitrate: this.producerType == ProducerType.user
+              ? this.room.video_bitrate
+              : this.room.screen_bitrate);
     }
   }
 
@@ -191,8 +196,8 @@ class WRTCProducer {
 
     var offer = await this.peer!.createOffer({'offerToReceiveVideo': 1});
     // var offer = await this.peer!.createOffer();
-    var offerWithBandwidth =
-        await WRTCUtils.SetBandwidthSdp(offer, this.producerType);
+    // var offerWithBandwidth =
+    //     await WRTCUtils.SetBandwidthSdp(offer, this.producerType);
     await this.peer!.setLocalDescription(offer);
 
     var _desc = await peer!.getLocalDescription();
@@ -654,6 +659,9 @@ class WRTCProducer {
       this._streamController.close();
 
       if (this.stream != null) {
+        this.stream!.getTracks().forEach((e) {
+          e.stop();
+        });
         this.stream!.dispose();
         this.stream = null;
       }
