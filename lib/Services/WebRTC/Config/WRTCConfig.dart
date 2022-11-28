@@ -1,7 +1,7 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class WRTCCOnfig {
-  static String host = dotenv.env['MEDIA_SERVER_HOST'] ?? '';
+  static String host = dotenv.get("MEDIA_SERVER_HOST", fallback: "");
 
   static const configurationPeerConnection = {
     "sdpSemantics": "unified-plan", // Add this line for support windows

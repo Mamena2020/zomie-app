@@ -55,9 +55,13 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
 
 
 #How to use
-- create .env file
-   - cmd: cp .env.example .env
+- create dotenv file
+   - cmd: cp dotenv.example dotenv
    - fill in credentials
+     ```
+      MEDIA_SERVER_HOST = "localhost:5000"
+     ```
+
 - android config
    - change "applicationId" 
      - dir: (android/app/build.gradle) 
