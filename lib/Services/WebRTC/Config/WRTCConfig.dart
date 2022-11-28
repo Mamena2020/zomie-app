@@ -1,6 +1,8 @@
 class WRTCCOnfig {
   static const host = "http://192.168.1.7:5000";
 
+  // static const host = "https://zomie-server-production.up.railway.app";
+
   static const configurationPeerConnection = {
     "sdpSemantics": "unified-plan", // Add this line for support windows
     "iceServers": [

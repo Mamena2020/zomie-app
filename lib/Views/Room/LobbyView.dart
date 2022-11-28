@@ -26,7 +26,10 @@ class _LobbyViewState extends State<LobbyView> {
 
   bool isLoad = false;
   PrepareForMeeting() async {
-    WRTCService.instance().InitProducer(room: this.widget.room);
+    await WRTCService.instance().InitProducer(room: this.widget.room);
+
+    tecName.text = WRTCService.instance().producer.name;
+
     await WRTCService.instance().wrtcProducer!.GetUserMedia();
     setState(() {
       isLoad = true;
@@ -91,9 +94,9 @@ class _LobbyViewState extends State<LobbyView> {
       _size = Size(width * 0.5, (width * 0.5) * 0.5);
     } else {
       if (width > 400) {
-        _size = Size(400, 600);
+        _size = Size(350, 550);
       } else {
-        _size = Size(width * 0.8, (width * 1.2));
+        _size = Size(width * 0.75, (width * 1.2));
       }
     }
 
@@ -128,6 +131,8 @@ class _LobbyViewState extends State<LobbyView> {
   }
 
   TextEditingController tecPassword = TextEditingController();
+  TextEditingController tecName = TextEditingController();
+  ResponseApi responseName = ResponseApi.init();
 
   Widget info() {
     return Padding(
@@ -141,17 +146,45 @@ class _LobbyViewState extends State<LobbyView> {
             child: Text(
                 this.widget.room.participants.toString() + " partisipants"),
           ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SizedBox(
+              width: 200.0,
+              height: 60,
+              child: SizedBox(
+                height: 50,
+                child: TextField(
+                  controller: tecName,
+                  maxLines: 1,
+                  maxLength: 50,
+                  onChanged: (c) {
+                    setState(() {});
+                  },
+                  decoration: InputDecoration(
+                      hintText: 'Name',
+                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                      counterText: '',
+                      contentPadding: EdgeInsets.symmetric(vertical: 18.0),
+                      errorText: responseName.status_code != 200
+                          ? responseName.message
+                          : null),
+                ),
+              ),
+            ),
+          ),
           !this.widget.room.password_required
               ? SizedBox()
               : Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: SizedBox(
-                    width: 150.0,
+                    width: 200.0,
                     height: 60,
                     child: SizedBox(
                       height: 50,
                       child: TextField(
                         controller: tecPassword,
+                        maxLines: 1,
+                        maxLength: 50,
                         onChanged: (c) {
                           setState(() {});
                         },
@@ -188,7 +221,7 @@ class _LobbyViewState extends State<LobbyView> {
   bool joinPressing = false;
   Widget JoinButton() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.only(left: 8, top: 8, right: 8, bottom: 12),
       child: SizedBox(
         height: 40,
         width: 100,
@@ -198,11 +231,23 @@ class _LobbyViewState extends State<LobbyView> {
               setState(() {
                 joinPressing = true;
               });
+
+              if (tecName.text.isEmpty || tecName.text.length < 4) {
+                responseName = ResponseApi(
+                    status_code: 403,
+                    message: "Must be more than 4 characters");
+              } else {
+                responseName = ResponseApi.init();
+              }
+
               responseRoom = await WRTCRoomController.CheckRoom(
                   room_id: widget.room.id,
                   password:
                       widget.room.password_required ? tecPassword.text : null);
-              if (responseRoom.status_code == 200) {
+              if (responseRoom.status_code == 200 &&
+                  responseName.status_code == 200) {
+                await WRTCService.instance()
+                    .SetProducerName(name: tecName.text);
                 await WRTCService.instance().JoinCall(
                   room: widget.room,
                 );

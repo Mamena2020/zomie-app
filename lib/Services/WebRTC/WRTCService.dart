@@ -44,7 +44,7 @@ class WRTCService {
     _singleton = null;
   }
 
-  void SetProducerName({required String name}) {
+  Future<void> SetProducerName({required String name}) async {
     this.producer.name = name;
   }
 

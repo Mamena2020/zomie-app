@@ -19,6 +19,13 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
         - turn on/off camera
      - chat room
      - Screen share 
+  - Settings
+     - Bitrate
+        - control video/screen in the room
+     - Room Password 
+        - allow/not 
+     - Room life time
+        - room life time after created  
   
 - Tested platform status
   - :heavy_check_mark: Android (tested)

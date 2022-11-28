@@ -211,7 +211,7 @@ class WRTCMessageBloc {
         ? SizedBox()
         : Container(
             height: 56,
-            decoration: BoxDecoration(color: Colors.grey.shade700),
+            decoration: BoxDecoration(color: Colors.teal.shade700),
             child: Stack(
               children: [
                 Align(

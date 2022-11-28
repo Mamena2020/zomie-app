@@ -148,6 +148,7 @@ class _HomeViewState extends State<HomeView> {
         var _tecPassword = TextEditingController();
         var _isValidPassword = true;
         var _isValidPasswordMsg = "";
+        bool _isVisiblePassword = false;
         return WillPopScope(
           onWillPop: () async {
             Navigator.of(_context).pop();
@@ -177,15 +178,31 @@ class _HomeViewState extends State<HomeView> {
                             }
                           });
                         },
+                        obscureText: _isVisiblePassword ? false : true,
                         decoration: InputDecoration(
-                            hintText: 'Password',
-                            hintStyle: TextStyle(color: Colors.grey.shade400),
-                            contentPadding:
-                                EdgeInsets.symmetric(vertical: 18.0),
-                            errorStyle: TextStyle(
-                                fontSize: 10, color: Colors.red.shade600),
-                            errorText:
-                                _isValidPassword ? null : _isValidPasswordMsg),
+                          hintText: 'Password',
+                          hintStyle: TextStyle(color: Colors.grey.shade400),
+                          contentPadding: EdgeInsets.symmetric(vertical: 18.0),
+                          errorStyle: TextStyle(
+                              fontSize: 10, color: Colors.red.shade600),
+                          errorText:
+                              _isValidPassword ? null : _isValidPasswordMsg,
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setstate(() {
+                                _isVisiblePassword = !_isVisiblePassword;
+                              });
+                            },
+                            icon: Icon(
+                              _isVisiblePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off_rounded,
+                              color: _isVisiblePassword
+                                  ? Colors.teal
+                                  : Colors.grey,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   )),
@@ -210,7 +227,7 @@ class _HomeViewState extends State<HomeView> {
                       _isValidPasswordMsg = "Required";
                     } else if (_tecPassword.text.length < 5) {
                       _isValidPassword = false;
-                      _isValidPasswordMsg = "Have more then 4 character";
+                      _isValidPasswordMsg = "Must be more than 4 characters";
                     }
                     setstate(() {});
                     if (_isValidPassword) {
