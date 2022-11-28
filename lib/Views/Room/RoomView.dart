@@ -114,59 +114,6 @@ class _RoomViewState extends State<RoomView> {
     );
   }
 
-  TextEditingController tecRoomID = TextEditingController();
-
-  Widget TextfieldRoom() {
-    return WRTCService.instance().inCall
-        ? SizedBox()
-        : Align(
-            alignment: Alignment.center,
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: SizedBox(
-                height: 60,
-                width: MediaQuery.of(context).size.width > 300
-                    ? 300
-                    : MediaQuery.of(context).size.width * 0.9,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 55,
-                        child: TextField(
-                          controller: tecRoomID,
-                          onChanged: (c) {
-                            setState(() {});
-                          },
-                          decoration: InputDecoration(hintText: 'Room id'),
-                        ),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (tecRoomID.text.isNotEmpty) {
-                          await WRTCService.instance()
-                              .JoinCall(room_id: tecRoomID.text);
-                          setState(() {});
-                        }
-                      },
-                      child: Text(
-                        "JOIN NOW",
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        // shape: CircleBorder(),
-                        padding: EdgeInsets.all(17),
-                        backgroundColor: Colors.teal, // <-- Button color
-                        // foregroundColor: Colors.red, // <-- Splash color
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-          );
-  }
-
   Widget producerMedia() {
     double _size = width > height ? width : height;
     if (WRTCService.instance().wrtcProducer!.consumers.length > 2) {

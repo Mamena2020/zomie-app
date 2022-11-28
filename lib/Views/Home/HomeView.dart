@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zomie_app/Controllers/SettingController.dart';
 import 'package:zomie_app/Router/RouterService.dart';
+import 'package:zomie_app/Services/WebRTC/Controller/WRTCRoomController.dart';
+import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 import 'package:zomie_app/StateManagement/Providers/proSet.dart';
 import 'package:zomie_app/Views/Room/RoomView.dart';
@@ -69,8 +71,11 @@ class _HomeViewState extends State<HomeView> {
           if (proSet!.setting.passwordRequired) {
             PasswordDialog();
           } else {
-            await WRTCService.instance().CreateRoom();
-            tecRoomID.text = WRTCService.instance().room.id;
+            Room room = await WRTCRoomController.CreateRoom(
+                life_time: proSet!.setting.roomLifeTime.lifeTime,
+                video_bitrate: proSet!.setting.video_bitrate,
+                screen_bitrate: proSet!.setting.screen_bitrate);
+            tecRoomID.text = room.id;
             setState(() {});
           }
           // after create, then jump to room immediately
@@ -209,11 +214,12 @@ class _HomeViewState extends State<HomeView> {
                     }
                     setstate(() {});
                     if (_isValidPassword) {
-                      await WRTCService.instance().CreateRoom(
-                          room_password: _tecPassword.text,
-                          room_life_time:
-                              proSet!.setting.roomLifeTime.lifeTime);
-                      tecRoomID.text = WRTCService.instance().room.id;
+                      Room room = await WRTCRoomController.CreateRoom(
+                          password: _tecPassword.text,
+                          life_time: proSet!.setting.roomLifeTime.lifeTime,
+                          video_bitrate: proSet!.setting.video_bitrate,
+                          screen_bitrate: proSet!.setting.screen_bitrate);
+                      tecRoomID.text = room.id;
                       setState(() {});
                       Navigator.of(_context).pop();
                     }

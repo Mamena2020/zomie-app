@@ -19,7 +19,7 @@ class RoomLifeTime {
     new RoomLifeTime(name: "30 Minute", lifeTime: 30)
   ];
 
-  static int GetRoomInstance(int lt) {
+  static int GetLifeTimeIndex(int lt) {
     return roomLifeTimes.indexWhere((e) => e.lifeTime == lt);
   }
 }

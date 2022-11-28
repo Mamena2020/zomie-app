@@ -4,26 +4,24 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:universal_html/html.dart' as uhtml;
 import 'package:zomie_app/Services/WebRTC/Config/WRTCConfig.dart';
 import 'package:zomie_app/Services/WebRTC/Enums/enums.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Candidate.dart';
 import 'package:zomie_app/Services/WebRTC/Models/ConsumerM.dart';
 import 'package:zomie_app/Services/WebRTC/Models/HasMedia.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Producer.dart';
-import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocketEvent.dart';
+import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocketFunction.dart';
 import 'package:zomie_app/Services/WebRTC/Signaling/WRTCSocket.dart';
 import 'package:zomie_app/Services/WebRTC/Utils/WRTCUtils.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 import 'package:http/http.dart' as http;
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 
 class WRTCProducer {
   Producer producer;
   CallType callType;
-  String room_id;
+  Room room;
   ProducerType producerType;
   RTCPeerConnection? peer;
   ValueNotifier<bool> isConnected = ValueNotifier(false);
@@ -39,7 +37,7 @@ class WRTCProducer {
       StreamController<List<ConsumerM>>.broadcast();
 
   WRTCProducer(
-      {required this.room_id,
+      {required this.room,
       required this.producer,
       required this.producerType,
       required this.callType}) {
@@ -203,11 +201,11 @@ class WRTCProducer {
     // print(sdp);
     String bodyParams = "";
     String url = "";
-    url = WRTCCOnfig.host + "/join-room";
+    url = WRTCCOnfig.host + "/api/join-room";
     bodyParams = await jsonEncode({
       "socket_id": WRTCSocket.instance().socket.id,
       "sdp": sdp,
-      "room_id": this.room_id,
+      "room_id": this.room.id,
       "use_sdp_transform": true,
       "type": this.producerType.name,
       "producer_id": this.producer.id,
@@ -217,6 +215,8 @@ class WRTCProducer {
       "has_audio": this.producer.hasMedia.audio,
       "platform": _platform
     });
+
+    print(bodyParams);
 
     final res = await http.Client()
         .post(Uri.parse(url),
@@ -236,7 +236,11 @@ class WRTCProducer {
           peer: peer!, sdpRemote: body["data"]["sdp"]);
       print("p-@@@ success set remote producer");
 
-      await WRTCUtils.setBitrate(peer: this.peer!);
+      await WRTCUtils.setBitrate(
+          peer: this.peer!,
+          bitrate: this.producerType == ProducerType.user
+              ? this.room.video_bitrate
+              : this.room.screen_bitrate);
 
       await _AddCandidatesToServer();
       WRTCSocketFunction.NotifyServer(
@@ -244,7 +248,7 @@ class WRTCProducer {
               ? NotifyType.start_screen
               : NotifyType.join,
           producer_id: this.producer.id,
-          room_id: this.room_id);
+          room_id: this.room.id);
     }
     // } catch (e) {
     //   print("p-error _onRenegotiationNeeded");

@@ -109,8 +109,8 @@ class WRTCUtils {
       audioBandwidth = "50"; // kbps
       videoBandwidth = "250"; // kbps
     }
-    print("================================== BEFORE");
-    print(sdp);
+    // print("================================== BEFORE");
+    // print(sdp);
     //--------------------------------------------------------------------------
     // sdp = sdp.replaceAll('/a=mid:audio\r\n/g',
     //     'a=mid:audio\r\nb=AS:' + audioBandwidth.toString() + '\r\n');
@@ -119,8 +119,8 @@ class WRTCUtils {
     sdp = sdp.replaceAll('m=audio ', "b=AS:${audioBandwidth}\r\n");
     sdp = sdp.replaceAll('m=video ', "b=AS:${videoBandwidth}\r\n");
     //--------------------------------------------------------------------------
-    print("================================== AFTER ");
-    print(sdp);
+    // print("================================== AFTER ");
+    // print(sdp);
     newDesc = RTCSessionDescription(sdp, desc.type);
 
     return newDesc;
@@ -164,15 +164,15 @@ class WRTCUtils {
   //   return newLines.join("\n");
   // }
 
-  static Future<void> setBitrate({required RTCPeerConnection peer}) async {
+  static Future<void> setBitrate(
+      {required RTCPeerConnection peer, required int bitrate}) async {
     try {
-      int bandwidth = 75;
       var sender = await peer.getSenders();
       var parameters = sender.first.parameters;
       if (parameters.encodings == null || parameters.encodings!.isEmpty) {
         parameters.encodings = [RTCRtpEncoding()];
       }
-      parameters.encodings!.first.maxBitrate = bandwidth * 1000;
+      parameters.encodings!.first.maxBitrate = bitrate * 1000;
       await sender.first.setParameters(parameters);
     } catch (e) {
       print(e);

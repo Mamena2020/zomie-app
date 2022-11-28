@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zomie_app/Router/RouterService.dart';
-import 'package:zomie_app/Services/WebRTC/Models/RoomInfo.dart';
+import 'package:zomie_app/Services/WebRTC/Controller/WRTCRoomController.dart';
+import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 import 'package:zomie_app/Views/Room/LobbyView.dart';
 import 'package:zomie_app/Views/Room/RoomView.dart';
@@ -32,12 +33,10 @@ class _RoomIndexViewState extends State<RoomIndexView> {
     }
   }
 
-  RoomInfo roomInfo = RoomInfo.init();
+  Room room = Room.init();
   bool isLoad = false;
   GetRoom() async {
-    roomInfo =
-        await WRTCService.instance().getRoom(RouteService.params["id"] ?? '');
-    print(roomInfo.message);
+    room = await WRTCRoomController.getRoom(RouteService.params["id"] ?? '');
 
     setState(() {
       isLoad = true;
@@ -48,7 +47,7 @@ class _RoomIndexViewState extends State<RoomIndexView> {
   Widget build(BuildContext context) {
     return !isLoad
         ? template(child: CircularProgressIndicator())
-        : !roomInfo.exist
+        : room.id == ""
             ? template(child: Text("Room not found"), showAppbar: true)
             : roomExist();
   }
@@ -66,7 +65,7 @@ class _RoomIndexViewState extends State<RoomIndexView> {
       return RoomView();
     }
     return LobbyView(
-      roomInfo: roomInfo,
+      room: room,
       onJoin: () {
         setState(() {});
       },

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zomie_app/Models/RoomBitrate.dart';
 import 'package:zomie_app/Models/RoomLifeTime.dart';
 import 'package:zomie_app/StateManagement/Providers/proSet.dart';
+import 'package:zomie_app/Widgets/Widgets.dart';
 
 class SettingView extends StatefulWidget {
   const SettingView({super.key});
@@ -23,19 +25,38 @@ class _SettingViewState extends State<SettingView> {
 
   bool isLoad = false;
   RoomLifeTime roomLifeTimeSelected = RoomLifeTime.roomLifeTimes.first;
+  RoomBitrate roomBitrateVideoSelected =
+      RoomBitrate.RoomBitrates[RoomBitrate.GetBitrateIndex(90)];
+  RoomBitrate roomBitrateScreenSelected =
+      RoomBitrate.RoomBitrates[RoomBitrate.GetBitrateIndex(250)];
   Load() {
-    int i = RoomLifeTime.GetRoomInstance(proSet!.setting.roomLifeTime.lifeTime);
+    //----------------------------- lifetime
+    int i =
+        RoomLifeTime.GetLifeTimeIndex(proSet!.setting.roomLifeTime.lifeTime);
     if (i >= 0) {
       roomLifeTimeSelected = RoomLifeTime.roomLifeTimes[i];
     }
+    //----------------------------- bitrate
+    i = RoomBitrate.GetBitrateIndex(proSet!.setting.video_bitrate);
+    if (i >= 0) {
+      roomBitrateVideoSelected = RoomBitrate.RoomBitrates[i];
+    }
+    i = RoomBitrate.GetBitrateIndex(proSet!.setting.screen_bitrate);
+    if (i >= 0) {
+      roomBitrateScreenSelected = RoomBitrate.RoomBitrates[i];
+    }
+
     setState(() {
       isLoad = true;
     });
   }
 
+  Size size = Size.zero;
+
   @override
   Widget build(BuildContext context) {
     proSet = Provider.of<ProSet>(context);
+    size = MediaQuery.of(context).size;
 
     return Scaffold(
       appBar: AppBar(
@@ -88,20 +109,20 @@ class _SettingViewState extends State<SettingView> {
         controlAffinity:
             ListTileControlAffinity.leading, //  <-- leading Checkbox
       ),
-      CheckboxListTile(
-        title: Text(
-          "Ask when user join room",
-          style: TextStyle(fontSize: 13),
-        ),
-        value: proSet!.setting.askWhenJoin,
-        onChanged: (newValue) {
-          setState(() {
-            proSet!.setting.askWhenJoin = newValue!;
-          });
-        },
-        controlAffinity:
-            ListTileControlAffinity.leading, //  <-- leading Checkbox
-      ),
+      // CheckboxListTile(
+      //   title: Text(
+      //     "Ask when user join room",
+      //     style: TextStyle(fontSize: 13),
+      //   ),
+      //   value: proSet!.setting.askWhenJoin,
+      //   onChanged: (newValue) {
+      //     setState(() {
+      //       proSet!.setting.askWhenJoin = newValue!;
+      //     });
+      //   },
+      //   controlAffinity:
+      //       ListTileControlAffinity.leading, //  <-- leading Checkbox
+      // ),
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: Padding(
@@ -118,13 +139,47 @@ class _SettingViewState extends State<SettingView> {
             ],
           ),
         ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 15),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Video bitrate on the room",
+                style: TextStyle(fontSize: 13),
+              ),
+              _VideoBitrateOption(),
+            ],
+          ),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 15),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Screen shere bitrate on the room",
+                style: TextStyle(fontSize: 13),
+              ),
+              _ScreenBitrateOption(),
+            ],
+          ),
+        ),
       )
     ];
   }
 
   Widget _RoomLifeTimeOption() {
     return DropdownButton<RoomLifeTime>(
-      hint: Text("Select item"),
+      hint: Text("Select lifetime"),
       value: roomLifeTimeSelected,
       onChanged: (value) {
         setState(() {
@@ -137,6 +192,50 @@ class _SettingViewState extends State<SettingView> {
           value: _lifeTime,
           child: Text(
             _lifeTime.name,
+            style: TextStyle(color: Colors.black, fontSize: 13),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _VideoBitrateOption() {
+    return DropdownButton<RoomBitrate>(
+      hint: Text("Select bitrate"),
+      value: roomBitrateVideoSelected,
+      onChanged: (value) {
+        setState(() {
+          roomBitrateVideoSelected = value!;
+          proSet!.setting.video_bitrate = value.bitrate;
+        });
+      },
+      items: RoomBitrate.RoomBitrates.map((_bitrate) {
+        return DropdownMenuItem<RoomBitrate>(
+          value: _bitrate,
+          child: Text(
+            _bitrate.unit,
+            style: TextStyle(color: Colors.black, fontSize: 13),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _ScreenBitrateOption() {
+    return DropdownButton<RoomBitrate>(
+      hint: Text("Select bitrate"),
+      value: roomBitrateScreenSelected,
+      onChanged: (value) {
+        setState(() {
+          roomBitrateScreenSelected = value!;
+          proSet!.setting.screen_bitrate = value.bitrate;
+        });
+      },
+      items: RoomBitrate.RoomBitrates.map((_bitrate) {
+        return DropdownMenuItem<RoomBitrate>(
+          value: _bitrate,
+          child: Text(
+            _bitrate.unit,
             style: TextStyle(color: Colors.black, fontSize: 13),
           ),
         );
@@ -158,13 +257,29 @@ class _SettingViewState extends State<SettingView> {
       ),
       InkWell(
         onTap: () {
-          // Widgets.TheAlertDialog(
-          //     color_cancel: proSet.color.color_1,
-          //     text_cancel: proSet.lan["close"],
-          //     context: context,
-          //     height: proSet.width * 0.7,
-          //     width: proSet.width * 0.7,
-          //     text: "Version App:" + Config.version_app);
+          Widgets.ShowDialog(
+              context: context,
+              width: size.width * 0.7,
+              height: size.height * 0.7,
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                        text:
+                            'MIT License\n\n Copyright (c) 2022 Andre C Aipassa '),
+                    TextSpan(
+                      text:
+                          '\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:',
+                    ),
+                    TextSpan(
+                        text:
+                            '\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.'),
+                    TextSpan(
+                        text:
+                            '\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE'),
+                  ],
+                ),
+              ));
         },
         child: ListTile(
           leading: Icon(Icons.info),

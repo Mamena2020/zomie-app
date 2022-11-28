@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:zomie_app/Services/WebRTC/Controller/WRTCRoomController.dart';
 import 'package:zomie_app/Services/WebRTC/Models/ResponseApi.dart';
-import 'package:zomie_app/Services/WebRTC/Models/RoomInfo.dart';
+import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 
 class LobbyView extends StatefulWidget {
-  RoomInfo roomInfo;
+  Room room;
   Function onJoin;
 
-  LobbyView({super.key, required this.roomInfo, required this.onJoin});
+  LobbyView({super.key, required this.room, required this.onJoin});
   @override
   State<LobbyView> createState() => _LobbyViewState();
 }
@@ -25,7 +26,7 @@ class _LobbyViewState extends State<LobbyView> {
 
   bool isLoad = false;
   PrepareForMeeting() async {
-    WRTCService.instance().InitProducer(room_id: this.widget.roomInfo.id);
+    WRTCService.instance().InitProducer(room: this.widget.room);
     await WRTCService.instance().wrtcProducer!.GetUserMedia();
     setState(() {
       isLoad = true;
@@ -138,9 +139,9 @@ class _LobbyViewState extends State<LobbyView> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-                this.widget.roomInfo.participants.toString() + " partisipants"),
+                this.widget.room.participants.toString() + " partisipants"),
           ),
-          !this.widget.roomInfo.password
+          !this.widget.room.password_required
               ? SizedBox()
               : Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -173,7 +174,7 @@ class _LobbyViewState extends State<LobbyView> {
   }
 
   Widget JoinWidget() {
-    if (!this.widget.roomInfo.password) {
+    if (!this.widget.room.password_required) {
       return JoinButton();
     } else {
       if (this.tecPassword.text.isNotEmpty) {
@@ -197,15 +198,14 @@ class _LobbyViewState extends State<LobbyView> {
               setState(() {
                 joinPressing = true;
               });
-              responseRoom = await WRTCService.instance().CheckRoom(
-                  room_id: widget.roomInfo.id,
-                  room_password:
-                      widget.roomInfo.password ? tecPassword.text : null);
+              responseRoom = await WRTCRoomController.CheckRoom(
+                  room_id: widget.room.id,
+                  password:
+                      widget.room.password_required ? tecPassword.text : null);
               if (responseRoom.status_code == 200) {
                 await WRTCService.instance().JoinCall(
-                    room_id: widget.roomInfo.id,
-                    room_password:
-                        widget.roomInfo.password ? tecPassword.text : null);
+                  room: widget.room,
+                );
                 if (WRTCService.instance().inCall) {
                   print("JOIN SUCCESS");
                   widget.onJoin();
