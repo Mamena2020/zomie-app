@@ -111,7 +111,9 @@ class _LobbyViewState extends State<LobbyView> {
         height: _producerMediaSize().height,
         child: Stack(
           children: [
-            WRTCService.instance().wrtcProducer!.ShowMedia(),
+            WRTCService.instance().wrtcProducer!.ShowMedia(
+                size: Size(
+                    _producerMediaSize().width, _producerMediaSize().height)),
             Align(
               alignment: Alignment.bottomCenter,
               child: Row(

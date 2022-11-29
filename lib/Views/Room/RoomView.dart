@@ -130,14 +130,14 @@ class _RoomViewState extends State<RoomView> {
       alignment: Alignment.topRight,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: SizedBox(
-          // height: _size + _size * 0.5,
-          height: _size,
-          width: _size,
-          child: WRTCService.instance().inCall
-              ? WRTCService.instance().wrtcProducer!.ShowMedia()
-              : SizedBox(),
-        ),
+        child: WRTCService.instance().inCall
+            ? WRTCService.instance().wrtcProducer!.ShowMedia(
+                size: Size(_size, _size),
+                allowResize: true,
+                onResize: () {
+                  setState(() {});
+                })
+            : SizedBox(),
       ),
     );
   }

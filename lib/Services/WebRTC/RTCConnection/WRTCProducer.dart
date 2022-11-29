@@ -32,6 +32,8 @@ class WRTCProducer {
       StreamController<MediaStream>.broadcast();
 
   List<ConsumerM> consumers = [];
+  bool _isPined = false;
+  ConsumerM consumerPined = ConsumerM.init();
 
   StreamController<List<ConsumerM>> consumerStream =
       StreamController<List<ConsumerM>>.broadcast();
@@ -343,44 +345,114 @@ class WRTCProducer {
     }
   }
 
-  Widget ShowMedia() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          new BoxShadow(
-            color: Colors.black.withOpacity(0.5),
-            blurRadius: 20.0,
+  bool _isMinimizeMedia = false;
+  Widget ShowMedia(
+      {required Size size, bool allowResize = false, Function? onResize}) {
+    return AnimatedContainer(
+      height: _isMinimizeMedia && allowResize ? 40 : size.height,
+      width: _isMinimizeMedia && allowResize ? 40 : size.width,
+      duration: Duration(milliseconds: 300),
+      child: Stack(
+        children: [
+          Center(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  new BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 20.0,
+                  ),
+                ],
+              ),
+              child: _isMinimizeMedia
+                  ? Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          new BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 20.0,
+                          ),
+                        ],
+                      ),
+                    )
+                  : StreamBuilder<MediaStream>(
+                      initialData: this.videoRenderer.srcObject,
+                      stream: _streamController.stream,
+                      builder: (context, snapshot) {
+                        if (!producer.hasMedia.video) {
+                          return Center(
+                            child: Icon(
+                              Icons.videocam_off,
+                              color: Colors.red,
+                            ),
+                          );
+                        }
+                        if (snapshot.hasData) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: RTCVideoView(
+                              this.videoRenderer,
+                              mirror: true,
+                              objectFit: RTCVideoViewObjectFit
+                                  .RTCVideoViewObjectFitCover,
+                            ),
+                          );
+                        }
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      },
+                    ),
+            ),
           ),
+          Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child: new BackdropFilter(
+                    filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                    child: InkWell(
+                      onTap: () async {
+                        _isMinimizeMedia = !_isMinimizeMedia;
+                        if (onResize != null) {
+                          onResize();
+                        }
+                      },
+                      child: new Container(
+                        width: 25.0,
+                        height: 25.0,
+                        decoration: new BoxDecoration(
+                          color: Colors.grey.shade200.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: new Center(
+                          child: !_isMinimizeMedia
+                              ? Icon(
+                                  Icons.pin_invoke,
+                                  color: Colors.white,
+                                  size: 20,
+                                )
+                              : RotatedBox(
+                                  quarterTurns: 2,
+                                  child: Icon(
+                                    Icons.pin_invoke,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ))
         ],
-      ),
-      child: StreamBuilder<MediaStream>(
-        initialData: this.videoRenderer.srcObject,
-        stream: _streamController.stream,
-        builder: (context, snapshot) {
-          if (!producer.hasMedia.video) {
-            return Center(
-              child: Icon(
-                Icons.videocam_off,
-                color: Colors.red,
-              ),
-            );
-          }
-          if (snapshot.hasData) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: RTCVideoView(
-                this.videoRenderer,
-                mirror: true,
-                objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-              ),
-            );
-          }
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        },
       ),
     );
   }
@@ -476,37 +548,181 @@ class WRTCProducer {
   }
 
   Widget ShowConsumer({required double height, required double width}) {
-    return StreamBuilder<List<ConsumerM>>(
-        initialData: this.consumers,
-        stream: consumerStream.stream,
-        builder: (_, snapshot) {
-          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-            if (snapshot.data!.length == 1) {
-              return Container(
-                  height: height,
-                  width: width,
-                  child: Column(
-                    children: [snapshot.data!.first.Show()],
-                  ));
-            } else if (snapshot.data!.length == 2) {
-              if (height > width) {
-                return Column(
-                    children: snapshot.data!.map((e) => e.Show()).toList());
+    return SizedBox(
+      height: height,
+      width: width,
+      child: StreamBuilder<List<ConsumerM>>(
+          initialData: this.consumers,
+          stream: consumerStream.stream,
+          builder: (_, snapshot) {
+            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              if (snapshot.data!.length == 1) {
+                return Container(
+                    height: height,
+                    width: width,
+                    child: Column(
+                      children: [
+                        snapshot.data!.first.Show(
+                            size: Size(width, height),
+                            isShowPined: false,
+                            onPined: () {
+                              _PinedConsumer(consumer_: snapshot.data!.first);
+                            }),
+                      ],
+                    ));
               }
-              return Row(
-                  children: snapshot.data!.map((e) => e.Show()).toList());
-            } else if (snapshot.data!.length > 2) {
-              return GridView.count(
-                crossAxisCount: height > width ? 2 : 3,
-                children: snapshot.data!.map((e) => e.Show()).toList(),
-              );
+              return _ShowConsumerMoreThanOne(height: height, width: width);
             }
-            return Center(child: Text("Something wrong"));
-          }
-          return SizedBox(
-            child: Center(child: Text("Invite others to join you :)")),
-          );
-        });
+            return SizedBox(
+              child: Center(child: Text("Invite others to join you :)")),
+            );
+          }),
+    );
+  }
+
+  Widget _ShowConsumerMoreThanOne(
+      {required double height, required double width}) {
+    if (this._isPined) {
+      return _ShowConsumerPinedMode(height: height, width: width);
+    }
+
+    if (this.consumers.length == 2) {
+      if (height > width) {
+        return Column(
+            children: this
+                .consumers
+                .map((e) => e.Show(
+                    size: Size(width / 2, height / 2),
+                    isShowPined: true,
+                    onPined: () {
+                      _PinedConsumer(consumer_: e);
+                    }))
+                .toList());
+      }
+      return Row(
+          children: this
+              .consumers
+              .map((e) => e.Show(
+                  size: Size(width / 2, height / 2),
+                  isShowPined: true,
+                  onPined: () {
+                    _PinedConsumer(consumer_: e);
+                  }))
+              .toList());
+    } else if (this.consumers.length > 2) {
+      return GridView.count(
+        crossAxisCount: height > width ? 2 : 3,
+        children: this
+            .consumers
+            .map((e) => e.Show(
+                size: Size(width, height),
+                isShowPined: true,
+                onPined: () {
+                  _PinedConsumer(consumer_: e);
+                }))
+            .toList(),
+      );
+    }
+    return Center(child: Text("Something wrong"));
+  }
+
+  Widget _ShowConsumerPinedMode(
+      {required double height, required double width}) {
+    if (height > width) {
+      return Column(
+        children: [
+          SizedBox(
+            height: height * 0.75,
+            width: width,
+            child: this
+                .consumerPined
+                .Show(size: Size(width, height), isShowPined: true),
+          ),
+          SizedBox(
+              height: height * 0.25,
+              width: width,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: this.consumers.length,
+                itemBuilder: (_, i) {
+                  if (this.consumers[i].producer.id !=
+                      this.consumerPined.producer.id) {
+                    return this.consumers[i].Show(
+                          size: Size(width * 0.20, width * 0.20),
+                          isShowPined: false,
+                          // onPined: () {
+                          //   _PinedConsumer(consumer_: this.consumers[i]);
+                          // }
+                        );
+                  }
+                  return SizedBox();
+                },
+              ))
+        ],
+      );
+    } else {
+      return Row(
+        children: [
+          SizedBox(
+            height: height,
+            width: width * 0.75,
+            child: this.consumerPined.Show(
+                size: Size(width * 0.75, height),
+                isShowPined: true,
+                onPined: () {
+                  int i = this.consumers.indexWhere(
+                      (e) => e.producer.id == this.consumerPined.producer.id);
+                  if (i >= 0) {
+                    _PinedConsumer(consumer_: this.consumers[i]);
+                  }
+                }),
+          ),
+          SizedBox(
+              height: height,
+              width: width * 0.25,
+              child: ListView.builder(
+                scrollDirection: Axis.vertical,
+                itemCount: this.consumers.length,
+                itemBuilder: (_, i) {
+                  if (this.consumers[i].producer.id !=
+                      this.consumerPined.producer.id) {
+                    return this.consumers[i].Show(
+                          size: Size(width * 0.20, width * 0.20),
+                          isShowPined: false,
+                          // onPined: () {
+                          //   _PinedConsumer(consumer_: this.consumers[i]);
+                          // }
+                        );
+                  }
+                  return SizedBox();
+                },
+              ))
+        ],
+      );
+    }
+  }
+
+  void _PinedConsumer({required ConsumerM consumer_}) async {
+    if (this.consumerPined.producer.id == consumer_.producer.id) {
+      await this.consumerPined.Dispose();
+      this.consumerPined = ConsumerM.init();
+      print("un pined");
+      _isPined = false;
+    } else {
+      print("pined");
+
+      if (this.consumerPined.producer.id != "") {
+        await this.consumerPined.Dispose();
+      }
+      this.consumerPined = ConsumerM.init();
+      this.consumerPined.producer = Producer.copy(consumer_.producer);
+
+      await this.consumerPined.AddMediaStream(consumer_.mediaStream!);
+      _isPined = true;
+    }
+    print("consumer_.:" + consumer_.producer.id);
+    print("consumerPined.:" + consumerPined.producer.id);
+    SetStreamEvent();
   }
 
   StopMediaStream() async {
@@ -666,6 +882,9 @@ class WRTCProducer {
    */
   Dispose() async {
     try {
+      await consumerPined.Dispose();
+      consumerPined = ConsumerM.init();
+
       WRTCSocketFunction.endCall(
           producer_id: this.producer.id, room_id: this.room.id);
 

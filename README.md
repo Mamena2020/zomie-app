@@ -5,11 +5,6 @@ Online meeting app like google meet, build with flutter for all platforms.
 this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time communication, and <a href="https://socket.io">socket.io</a> for signaling & messaging.
 <a href="https://github.com/Mamena2020/zomie-server"> Server<a> running on nodejs with SFU method.
 
-// [1]. socket reconnect-> update sharescreen data to server,
-[2]. fix endcall screen share turn off.
-[3]. modif appbar gradient color
-[4].
-
 - Features
   - Create Room 
      - life time (default 1 minute)
@@ -26,6 +21,7 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
         - turn on/off camera
      - chat room
      - Screen share 
+     - Pined layout
   - Settings
      - Bitrate
         - control video/screen in the room

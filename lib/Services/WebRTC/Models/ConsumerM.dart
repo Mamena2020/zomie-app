@@ -10,6 +10,7 @@ class ConsumerM {
   RTCVideoRenderer _videoRenderer = RTCVideoRenderer();
 
   MediaStream? _mediaStream;
+  MediaStream? get mediaStream => _mediaStream;
 
   StreamController<MediaStream> _streamController =
       StreamController<MediaStream>.broadcast();
@@ -23,6 +24,9 @@ class ConsumerM {
   factory ConsumerM.init() => ConsumerM(
         producer: Producer.init(),
       );
+  factory ConsumerM.copy(ConsumerM origin) => ConsumerM(
+        producer: Producer.copy(origin.producer),
+      );
 
   UpdateData(Producer newProducer) {
     this.producer.hasMedia = newProducer.hasMedia;
@@ -31,11 +35,13 @@ class ConsumerM {
     }
   }
 
-  AddMediaStream(MediaStream mediaStream) {
+  AddMediaStream(MediaStream mediaStream_) async {
     if (_streamController.isClosed) {
       _streamController = StreamController<MediaStream>.broadcast();
     }
-    _mediaStream = mediaStream;
+    _mediaStream = mediaStream_;
+
+    await this._videoRenderer.initialize();
     this._videoRenderer.srcObject = _mediaStream;
     _streamController.sink.add(_mediaStream!);
     print("Add Stream to Consumer..........................");
@@ -51,13 +57,16 @@ class ConsumerM {
     this._mediaStream = null;
   }
 
-  Widget Show() {
-    return Flexible(
-      fit: FlexFit.tight,
-      flex: 1,
+  Widget Show(
+      {Function? onPined, required bool isShowPined, required Size size}) {
+    return SizedBox(
+      height: size.height,
+      width: size.width,
       child: Stack(
         children: [
           Container(
+              // height: constraint.hei,
+              // width: constraint.minWidth,
               margin: EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
               decoration: BoxDecoration(color: Colors.black),
               child: StreamBuilder<MediaStream>(
@@ -74,10 +83,10 @@ class ConsumerM {
                           child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            this._mediaStream == null ? "NULL" : "EXIST",
-                            style: TextStyle(color: Colors.teal),
-                          ),
+                          // Text(
+                          //   this._mediaStream == null ? "NULL" : "EXIST",
+                          //   style: TextStyle(color: Colors.teal),
+                          // ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: CircularProgressIndicator(),
@@ -95,6 +104,56 @@ class ConsumerM {
                       );
                     }
                   })),
+
+          // ---------------------------------------------------------- pined
+          isShowPined
+              ? Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: InkWell(
+                      onTap: () {
+                        if (onPined != null) {
+                          onPined();
+                        }
+                      },
+                      child: Container(
+                        width: 30.0,
+                        height: 30.0,
+                        decoration: new BoxDecoration(
+                          color: Colors.grey.shade200.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(50),
+                          boxShadow: [
+                            new BoxShadow(
+                                color: Colors.black.withOpacity(0.5),
+                                blurRadius: 5.0,
+                                spreadRadius: 5),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.push_pin,
+                          color: Colors.white,
+                          size: 17,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              : SizedBox(),
+          // ---------------------------------------------------------- audio
+          this.producer.hasMedia.audio
+              ? SizedBox()
+              : Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(
+                      Icons.mic_off,
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+          // ---------------------------------------------------------- name
           Align(
             alignment: Alignment.bottomLeft,
             child: Padding(
@@ -117,29 +176,13 @@ class ConsumerM {
   }
 
   Widget _show() {
-    return Stack(
-      children: [
-        this.producer.hasMedia.video
-            ? RTCVideoView(this._videoRenderer)
-            : Center(
-                child: Icon(
-                  Icons.videocam_off,
-                  color: Colors.red,
-                ),
-              ),
-        this.producer.hasMedia.audio
-            ? SizedBox()
-            : Align(
-                alignment: Alignment.topLeft,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
-                    Icons.mic_off,
-                    color: Colors.red,
-                  ),
-                ),
-              )
-      ],
-    );
+    return this.producer.hasMedia.video
+        ? RTCVideoView(this._videoRenderer)
+        : Center(
+            child: Icon(
+              Icons.videocam_off,
+              color: Colors.white,
+            ),
+          );
   }
 }
