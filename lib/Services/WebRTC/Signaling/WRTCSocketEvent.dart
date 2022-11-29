@@ -102,8 +102,11 @@ class WRTCSocketEvent {
         RTCMessage rtcMessage = RTCMessage.init();
         List<Producer> producers = [];
         if (data["producers"] != null) {
-          List<Producer> producers = await List<Producer>.from(
+          producers = await List<Producer>.from(
               data["producers"].map((e) => Producer.fromJson(e)).toList());
+          print("data[producers] exist: " + producers.length.toString());
+        } else {
+          print("data[producers] is empty");
         }
 
         // --------------------------------------------------- join room
@@ -121,7 +124,7 @@ class WRTCSocketEvent {
         // --------------------------------------------------- leave room
         if (data["type"] == "leave") {
           String _message = producer.name + " leave the room";
-          WRTCMessageType _messageType = WRTCMessageType.join_room;
+          WRTCMessageType _messageType = WRTCMessageType.leave_room;
           if (producer.type == ProducerType.screen) {
             _message = producer.name + " stop screen share";
             _messageType = WRTCMessageType.stop_screen;

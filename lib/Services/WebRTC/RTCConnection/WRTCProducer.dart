@@ -369,7 +369,7 @@ class WRTCProducer {
               child: _isMinimizeMedia
                   ? Container(
                       decoration: BoxDecoration(
-                        color: Colors.black,
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           new BoxShadow(
@@ -409,49 +409,54 @@ class WRTCProducer {
                     ),
             ),
           ),
-          Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: new BackdropFilter(
-                    filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                    child: InkWell(
-                      onTap: () async {
-                        _isMinimizeMedia = !_isMinimizeMedia;
-                        if (onResize != null) {
-                          onResize();
-                        }
-                      },
-                      child: new Container(
-                        width: 25.0,
-                        height: 25.0,
-                        decoration: new BoxDecoration(
-                          color: Colors.grey.shade200.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: new Center(
-                          child: !_isMinimizeMedia
-                              ? Icon(
-                                  Icons.pin_invoke,
-                                  color: Colors.white,
-                                  size: 20,
-                                )
-                              : RotatedBox(
-                                  quarterTurns: 2,
-                                  child: Icon(
-                                    Icons.pin_invoke,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
+          !allowResize
+              ? SizedBox()
+              : Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child: new BackdropFilter(
+                        filter:
+                            new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                        child: InkWell(
+                          onTap: () async {
+                            _isMinimizeMedia = !_isMinimizeMedia;
+                            if (onResize != null) {
+                              onResize();
+                            }
+                          },
+                          child: new Container(
+                            width: 25.0,
+                            height: 25.0,
+                            decoration: new BoxDecoration(
+                              color: Colors.grey.shade200.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: new Center(
+                              child: !_isMinimizeMedia
+                                  ? Icon(
+                                      Icons.pin_invoke,
+                                      color: Colors.white,
+                                      size: 20,
+                                    )
+                                  : RotatedBox(
+                                      quarterTurns: 2,
+                                      child: Icon(
+                                        Icons.pin_invoke,
+                                        color: _isMinimizeMedia
+                                            ? Colors.black
+                                            : Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ))
+                  ))
         ],
       ),
     );
@@ -547,7 +552,7 @@ class WRTCProducer {
     );
   }
 
-  Widget ShowConsumer({required double height, required double width}) {
+  Widget ShowConsumers({required double height, required double width}) {
     return SizedBox(
       height: height,
       width: width,
@@ -557,19 +562,12 @@ class WRTCProducer {
           builder: (_, snapshot) {
             if (snapshot.hasData && snapshot.data!.isNotEmpty) {
               if (snapshot.data!.length == 1) {
-                return Container(
-                    height: height,
-                    width: width,
-                    child: Column(
-                      children: [
-                        snapshot.data!.first.Show(
-                            size: Size(width, height),
-                            isShowPined: false,
-                            onPined: () {
-                              _PinedConsumer(consumer_: snapshot.data!.first);
-                            }),
-                      ],
-                    ));
+                return snapshot.data!.first.Show(
+                    size: Size(width, height),
+                    isShowPined: false,
+                    onPined: () {
+                      _PinedConsumer(consumer_: snapshot.data!.first);
+                    });
               }
               return _ShowConsumerMoreThanOne(height: height, width: width);
             }
@@ -747,9 +745,11 @@ class WRTCProducer {
 
   UpdateConsumers({required List<Producer> producers}) async {
     print("c-update consumers");
+    print("new from server producers:" + producers.length.toString());
     //-------------------------------------------- remove current producer
     List<ConsumerM> newConsumersM =
         await _filterIncomingProducers(producers: producers);
+    print("after filter newConsumersM:" + newConsumersM.length.toString());
     _shouldAdded(newConsumersM);
     _shouldRemove(newConsumersM);
     SetStreamEvent();
@@ -759,7 +759,6 @@ class WRTCProducer {
   _filterIncomingProducers({required List<Producer> producers}) async {
     List<ConsumerM> newConsumersM = [];
     for (int i = 0; i < producers.length; i++) {
-      // if (producers[i].id == this.currentProducerId ||  producers[i].user_id == ) {
       if (producers[i].user_id == this.producer.user_id) {
         await producers.removeAt(i);
         i--;
@@ -789,6 +788,8 @@ class WRTCProducer {
   }
 
   _shouldRemove(List<ConsumerM> newConsumersM) async {
+    print("_shouldRemove");
+    print(newConsumersM.length);
     if (newConsumersM.isEmpty) {
       for (int i = 0; i < this.consumers.length; i++) {
         this.consumers[i].Dispose();

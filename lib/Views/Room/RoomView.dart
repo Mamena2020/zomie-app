@@ -50,7 +50,7 @@ class _RoomViewState extends State<RoomView> {
           child: Stack(children: [
             WRTCService.instance()
                 .wrtcProducer!
-                .ShowConsumer(height: height, width: width),
+                .ShowConsumers(height: height, width: width),
             Actions(),
             width > 550
                 ? Row(
