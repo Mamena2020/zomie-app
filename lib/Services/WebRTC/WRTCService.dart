@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:zomie_app/Services/WebRTC/Audio/WRTCAudio.dart';
 import 'package:zomie_app/Services/WebRTC/Blocs/WRTCMessageBloc.dart';
 import 'package:zomie_app/Services/WebRTC/Config/WRTCConfig.dart';
 import 'package:zomie_app/Services/WebRTC/Enums/enums.dart';
@@ -28,6 +29,7 @@ class WRTCService {
   WRTCService._() {
     WRTCSocket.instance();
     WRTCSocketEvent.Listen();
+    WRTCAudio.instance();
   }
   static WRTCService? _singleton = new WRTCService._();
 

@@ -1,4 +1,5 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:zomie_app/Services/WebRTC/Audio/WRTCAudio.dart';
 import 'package:zomie_app/Services/WebRTC/Blocs/WRTCMessageBloc.dart';
 import 'package:zomie_app/Services/WebRTC/Enums/enums.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Candidate.dart';
@@ -120,6 +121,7 @@ class WRTCSocketEvent {
 
           rtcMessage = RTCMessage(
               producer: producer, messsage: _message, type: _messageType);
+          WRTCAudio.instance().playNotif();
         }
         // --------------------------------------------------- leave room
         if (data["type"] == "leave") {

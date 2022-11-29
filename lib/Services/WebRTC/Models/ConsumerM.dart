@@ -15,6 +15,8 @@ class ConsumerM {
   StreamController<MediaStream> _streamController =
       StreamController<MediaStream>.broadcast();
 
+  bool isPined = false;
+
   ConsumerM({
     required this.producer,
   }) {
@@ -121,7 +123,9 @@ class ConsumerM {
                         width: 30.0,
                         height: 30.0,
                         decoration: new BoxDecoration(
-                          color: Colors.grey.shade200.withOpacity(0.3),
+                          color: isPined
+                              ? Colors.white.withOpacity(0.7)
+                              : Colors.grey.shade200.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(50),
                           boxShadow: [
                             new BoxShadow(
@@ -132,7 +136,7 @@ class ConsumerM {
                         ),
                         child: Icon(
                           Icons.push_pin,
-                          color: Colors.white,
+                          color: isPined ? Colors.blue.shade700 : Colors.white,
                           size: 17,
                         ),
                       ),

@@ -587,10 +587,12 @@ class WRTCProducer {
     if (this.consumers.length == 2) {
       if (height > width) {
         return Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: this
                 .consumers
                 .map((e) => e.Show(
-                    size: Size(width / 2, height / 2),
+                    size: Size(height * 0.45, height * 0.45),
                     isShowPined: true,
                     onPined: () {
                       _PinedConsumer(consumer_: e);
@@ -598,10 +600,12 @@ class WRTCProducer {
                 .toList());
       }
       return Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: this
               .consumers
               .map((e) => e.Show(
-                  size: Size(width / 2, height / 2),
+                  size: Size(width * 0.45, width * 0.45),
                   isShowPined: true,
                   onPined: () {
                     _PinedConsumer(consumer_: e);
@@ -630,11 +634,18 @@ class WRTCProducer {
       return Column(
         children: [
           SizedBox(
-            height: height * 0.75,
+            height: (height * 0.7) - 56,
             width: width,
-            child: this
-                .consumerPined
-                .Show(size: Size(width, height), isShowPined: true),
+            child: this.consumerPined.Show(
+                size: Size(width, height),
+                isShowPined: true,
+                onPined: () {
+                  int i = this.consumers.indexWhere(
+                      (e) => e.producer.id == this.consumerPined.producer.id);
+                  if (i >= 0) {
+                    _PinedConsumer(consumer_: this.consumers[i]);
+                  }
+                }),
           ),
           SizedBox(
               height: height * 0.25,
@@ -646,7 +657,7 @@ class WRTCProducer {
                   if (this.consumers[i].producer.id !=
                       this.consumerPined.producer.id) {
                     return this.consumers[i].Show(
-                          size: Size(width * 0.20, width * 0.20),
+                          size: Size(height * 0.20, height * 0.20),
                           isShowPined: false,
                           // onPined: () {
                           //   _PinedConsumer(consumer_: this.consumers[i]);
@@ -705,6 +716,13 @@ class WRTCProducer {
       await this.consumerPined.Dispose();
       this.consumerPined = ConsumerM.init();
       print("un pined");
+      int i = this
+          .consumers
+          .indexWhere((e) => e.producer.id == consumer_.producer.id);
+      if (i >= 0) {
+        this.consumers[i].isPined = false;
+      }
+
       _isPined = false;
     } else {
       print("pined");
@@ -713,7 +731,9 @@ class WRTCProducer {
         await this.consumerPined.Dispose();
       }
       this.consumerPined = ConsumerM.init();
+      consumer_.isPined = true;
       this.consumerPined.producer = Producer.copy(consumer_.producer);
+      consumerPined.isPined = true;
 
       await this.consumerPined.AddMediaStream(consumer_.mediaStream!);
       _isPined = true;
