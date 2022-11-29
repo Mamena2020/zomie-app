@@ -19,6 +19,11 @@ class _RoomViewState extends State<RoomView> {
     // TODO: implement initState
     super.initState();
     print("audio status:" + WRTCService.instance().isAudioOn.toString());
+    WRTCService.instance().isShareScreen.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override

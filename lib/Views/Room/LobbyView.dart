@@ -3,6 +3,7 @@ import 'package:zomie_app/Services/WebRTC/Controller/WRTCRoomController.dart';
 import 'package:zomie_app/Services/WebRTC/Models/ResponseApi.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
+import 'package:zomie_app/Widgets/Widgets.dart';
 
 class LobbyView extends StatefulWidget {
   Room room;
@@ -57,6 +58,7 @@ class _LobbyViewState extends State<LobbyView> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Lobby"),
+        flexibleSpace: Widgets.AppbarBg(),
       ),
       body: Container(
         child: Center(

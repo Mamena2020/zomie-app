@@ -61,6 +61,7 @@ class _SettingViewState extends State<SettingView> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Setting"),
+        flexibleSpace: Widgets.AppbarBg(),
         leading: IconButton(
           icon: Icon(Icons.close, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
@@ -261,23 +262,26 @@ class _SettingViewState extends State<SettingView> {
               context: context,
               width: size.width * 0.7,
               height: size.height * 0.7,
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                          text:
+                              'MIT License \n\nCopyright (c) 2022 Andre C Aipassa '),
+                      TextSpan(
                         text:
-                            'MIT License\n\n Copyright (c) 2022 Andre C Aipassa '),
-                    TextSpan(
-                      text:
-                          '\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:',
-                    ),
-                    TextSpan(
-                        text:
-                            '\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.'),
-                    TextSpan(
-                        text:
-                            '\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE'),
-                  ],
+                            '\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:',
+                      ),
+                      TextSpan(
+                          text:
+                              '\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.'),
+                      TextSpan(
+                          text:
+                              '\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE'),
+                    ],
+                  ),
                 ),
               ));
         },

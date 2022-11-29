@@ -108,8 +108,9 @@ class WRTCProducer {
   GetUserMedia() async {
     print("p-get user media");
     producer.hasMedia = HasMedia.init();
-    this.stream = await WRTCUtils.GetUserMedia(callType);
-    if (this.stream != null) {
+    MediaStream? newStream = await WRTCUtils.GetUserMedia(callType);
+    if (newStream != null) {
+      this.stream = newStream;
       this.videoRenderer.srcObject = this.stream!;
     }
   }
@@ -117,8 +118,9 @@ class WRTCProducer {
   GetDisplayMedia() async {
     print("p-get user display");
     producer.hasMedia = HasMedia.init();
-    this.stream = await WRTCUtils.GetDisplayMedia();
-    if (this.stream != null) {
+    MediaStream? newStream = await WRTCUtils.GetDisplayMedia();
+    if (newStream != null) {
+      this.stream = newStream;
       this.videoRenderer.srcObject = this.stream!;
     }
   }

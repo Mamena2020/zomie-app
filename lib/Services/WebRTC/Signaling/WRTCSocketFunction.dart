@@ -17,6 +17,16 @@ class WRTCSocketFunction {
         };
         print(_data);
         WRTCSocket.instance().socket.emit("update-data", _data);
+
+        if (WRTCService.instance().isShareScreen.value) {
+          _data = {
+            "socket_id": WRTCSocket.instance().socket.id,
+            "room_id": WRTCService.instance().room.id,
+            "producer":
+                WRTCService.instance().wrtcShareScreen!.producer.toJson(),
+          };
+          WRTCSocket.instance().socket.emit("update-data", _data);
+        }
       }
     } catch (e) {
       print(e);

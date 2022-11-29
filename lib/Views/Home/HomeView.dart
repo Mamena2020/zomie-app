@@ -7,6 +7,7 @@ import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 import 'package:zomie_app/StateManagement/Providers/proSet.dart';
 import 'package:zomie_app/Views/Room/RoomView.dart';
+import 'package:zomie_app/Widgets/Widgets.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -38,6 +39,8 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Zomie"),
+        flexibleSpace: Widgets.AppbarBg(),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
               icon: Icon(Icons.settings),

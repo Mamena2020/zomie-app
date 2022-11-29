@@ -5,6 +5,7 @@ import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 import 'package:zomie_app/Views/Room/LobbyView.dart';
 import 'package:zomie_app/Views/Room/RoomView.dart';
+import 'package:zomie_app/Widgets/Widgets.dart';
 
 class RoomIndexView extends StatefulWidget {
   const RoomIndexView({super.key});
@@ -54,7 +55,11 @@ class _RoomIndexViewState extends State<RoomIndexView> {
 
   Widget template({required Widget child, bool showAppbar = false}) {
     return Scaffold(
-        appBar: showAppbar ? AppBar() : null,
+        appBar: showAppbar
+            ? AppBar(
+                flexibleSpace: Widgets.AppbarBg(),
+              )
+            : null,
         body: Container(
           child: Center(child: child),
         ));

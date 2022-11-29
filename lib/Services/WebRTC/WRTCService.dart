@@ -16,7 +16,7 @@ import 'package:zomie_app/Services/WebRTC/Utils/WRTCUtils.dart';
 
 class WRTCService {
   bool inCall = false;
-  bool isShareScreen = false;
+  ValueNotifier<bool> isShareScreen = ValueNotifier(false);
   //------------------------------ room
   Room room = Room.init();
   //------------------------------ producer
@@ -101,14 +101,14 @@ class WRTCService {
 
     await this.wrtcShareScreen!.CreateConnection();
     if (this.wrtcShareScreen!.isConnected.value) {
-      this.isShareScreen = true;
+      this.isShareScreen.value = true;
     }
   }
 
   Future<void> StopShareScreen() async {
     await this.wrtcShareScreen!.Dispose();
     this.wrtcShareScreen = null;
-    this.isShareScreen = false;
+    this.isShareScreen.value = false;
   }
 
   Widget ShareScreenButton({Function? onChange}) {
@@ -133,13 +133,13 @@ class WRTCService {
               width: 35.0,
               height: 35.0,
               decoration: new BoxDecoration(
-                color: !this.isShareScreen
+                color: !this.isShareScreen.value
                     ? Colors.grey.shade200.withOpacity(0.3)
                     : Colors.blue.shade800.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(50),
                 boxShadow: [
                   new BoxShadow(
-                      color: isShareScreen
+                      color: isShareScreen.value
                           ? Colors.blue.withOpacity(0.5)
                           : Colors.black.withOpacity(0.5),
                       blurRadius: 10.0,
@@ -149,7 +149,8 @@ class WRTCService {
               child: new Center(
                 child: Icon(
                   Icons.screen_share,
-                  color: isShareScreen ? Colors.blue.shade700 : Colors.white,
+                  color:
+                      isShareScreen.value ? Colors.blue.shade700 : Colors.white,
                   size: 17,
                 ),
               ),
@@ -175,9 +176,11 @@ class WRTCService {
       if (this.wrtcProducer != null) {
         if (this.wrtcShareScreen != null) {
           await this.wrtcShareScreen!.Dispose();
+          this.isShareScreen.value = false;
         }
 
         this.wrtcProducer!.Dispose();
+
         // this.wrtcProducer = null;
       }
       await WRTCMessageBloc.instance().Destroy();

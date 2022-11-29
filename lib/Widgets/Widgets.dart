@@ -1,6 +1,23 @@
 import 'package:flutter/material.dart';
 
 class Widgets {
+  static Widget AppbarBg() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: <Color>[
+              Colors.teal.shade900,
+              Colors.teal.shade700,
+              Colors.teal.shade500,
+              Colors.teal.shade300,
+              Colors.teal.shade700
+            ]),
+      ),
+    );
+  }
+
   static Future<void> ShowDialog(
       {required BuildContext context,
       required double width,
