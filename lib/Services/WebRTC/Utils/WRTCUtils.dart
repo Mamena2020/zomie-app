@@ -19,9 +19,9 @@ class WRTCUtils {
             'video': video
                 ? {
                     'facingMode': 'user',
-                    "width": {"min": 320, "ideal": 320},
-                    "height": {"min": 240},
-                    "frameRate": 60,
+                    // "width": {"min": 320, "ideal": 320},
+                    // "height": {"min": 240},
+                    // "frameRate": 60,
                   }
                 : false
           }
@@ -48,12 +48,13 @@ class WRTCUtils {
     MediaStream? stream;
 
     try {
-      if (type == ShareScreenType.allScreen) {
-        constraints = {
-          'audio': false,
-          'video': {'displaySurface': 'application'}
-        };
-      }
+      // if (type == ShareScreenType.allScreen) {
+      //   constraints = {
+      //     'audio': false,
+      //     // 'video': {'displaySurface': 'application'}
+      //     'video': true
+      //   };
+      // }
       stream = await navigator.mediaDevices.getDisplayMedia(constraints);
     } catch (e) {
       print(e);
@@ -94,75 +95,6 @@ class WRTCUtils {
       print(e);
     });
   }
-
-  static Future<RTCSessionDescription> SetBandwidthSdp(
-      RTCSessionDescription desc, ProducerType type) async {
-    RTCSessionDescription newDesc = desc;
-    String sdp = desc.sdp!;
-
-    String audioBandwidth = "";
-    String videoBandwidth = "";
-    if (type == ProducerType.user) {
-      audioBandwidth = "50"; // kbps
-      videoBandwidth = "100"; // kbps
-    } else {
-      audioBandwidth = "50"; // kbps
-      videoBandwidth = "250"; // kbps
-    }
-    // print("================================== BEFORE");
-    // print(sdp);
-    //--------------------------------------------------------------------------
-    // sdp = sdp.replaceAll('/a=mid:audio\r\n/g',
-    //     'a=mid:audio\r\nb=AS:' + audioBandwidth.toString() + '\r\n');
-    // sdp = sdp.replaceAll('/a=mid:video\r\n/g',
-    //     'a=mid:video\r\nb=AS:' + videoBandwidth.toString() + '\r\n');
-    sdp = sdp.replaceAll('m=audio ', "b=AS:${audioBandwidth}\r\n");
-    sdp = sdp.replaceAll('m=video ', "b=AS:${videoBandwidth}\r\n");
-    //--------------------------------------------------------------------------
-    // print("================================== AFTER ");
-    // print(sdp);
-    newDesc = RTCSessionDescription(sdp, desc.type);
-
-    return newDesc;
-  }
-
-  // setMediaBitrate(String sdp, String media, String bitrate) {
-  //   var lines = sdp.split("\n");
-  //   var line = -1;
-  //   for (var i = 0; i < lines.length; i++) {
-  //     if (lines[i].indexOf("m=" + media) == 0) {
-  //       line = i;
-  //       break;
-  //     }
-  //   }
-  //   if (line == -1) {
-  //     print("Could not find the m line for " + media);
-  //     return sdp;
-  //   }
-  //   print("Found the m line for " + media + " at line " + line.toString());
-
-  //   // Pass the m line
-  //   line++;
-
-  //   // Skip i and c lines
-  //   while (lines[line].indexOf("i=") == 0 || lines[line].indexOf("c=") == 0) {
-  //     line++;
-  //   }
-
-  //   // If we're on a b line, replace it
-  //   if (lines[line].indexOf("b") == 0) {
-  //     print("Replaced b line at line " + line.toString());
-  //     lines[line] = "b=AS:" + bitrate;
-  //     return lines.join("\n");
-  //   }
-
-  //   // Add a new b line
-  //   print("Adding new b line before line " + line.toString());
-  //   var newLines = lines.sublist(0, line);
-  //   newLines.add("b=AS:" + bitrate.toString());
-  //   newLines = newLines.addAll( lines.sublist(line, lines.length));
-  //   return newLines.join("\n");
-  // }
 
   static Future<void> setBitrate(
       {required RTCPeerConnection peer, required int bitrate}) async {

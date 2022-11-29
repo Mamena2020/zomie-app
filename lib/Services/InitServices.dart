@@ -28,6 +28,10 @@ class InitServices {
 
   // --------------------------------------------------------------------------- env
   Future<void> _Env() async {
-    await dotenv.load(fileName: "dotenv");
+    try {
+      await dotenv.load(fileName: "dotenv");
+    } catch (e) {
+      print(e);
+    }
   }
 }

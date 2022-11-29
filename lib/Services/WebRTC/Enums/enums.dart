@@ -21,7 +21,12 @@ enum WRTCMessageType {
 
 enum ProducerType { user, screen }
 
-enum NotifyType { message, join, leave, update, start_screen }
+enum NotifyType {
+  message,
+  join,
+  leave,
+  update,
+}
 
 enum ShareScreenType {
   allScreen,

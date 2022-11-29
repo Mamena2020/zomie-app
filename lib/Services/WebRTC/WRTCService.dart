@@ -173,15 +173,8 @@ class WRTCService {
   Future<void> EndCall() async {
     try {
       if (this.wrtcProducer != null) {
-        var _producer_id_screen = this.wrtcShareScreen != null
-            ? (this.wrtcShareScreen!.producer.id)
-            : '';
-        WRTCSocketFunction.endCall(
-            producer_id: this.producer.id,
-            producer_id_screen: _producer_id_screen,
-            room_id: this.room.id);
         if (this.wrtcShareScreen != null) {
-          this.wrtcShareScreen!.Dispose();
+          await this.wrtcShareScreen!.Dispose();
         }
 
         this.wrtcProducer!.Dispose();

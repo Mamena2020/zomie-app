@@ -162,6 +162,8 @@ class WRTCProducer {
     //   firstConnect = true;
     //   // }
     // };
+    onStopLocalStream();
+
     _onIceCandidate();
 
     this.peer!.onIceConnectionState = (e) {
@@ -249,9 +251,7 @@ class WRTCProducer {
 
       await _AddCandidatesToServer();
       WRTCSocketFunction.NotifyServer(
-          type: this.producerType == ProducerType.screen
-              ? NotifyType.start_screen
-              : NotifyType.join,
+          type: NotifyType.join,
           producer_id: this.producer.id,
           room_id: this.room.id);
     }
@@ -651,11 +651,22 @@ class WRTCProducer {
 
   // ===================================================================================================
 
+  onStopLocalStream() {
+    if (this.producerType == ProducerType.screen) {
+      this.stream!.getVideoTracks()[0].onEnded = () {
+        WRTCService.instance().StopShareScreen();
+      };
+    }
+  }
+
 /**
    * call this before destroy this instance
    */
   Dispose() async {
     try {
+      WRTCSocketFunction.endCall(
+          producer_id: this.producer.id, room_id: this.room.id);
+
       this._streamController.close();
 
       if (this.stream != null) {

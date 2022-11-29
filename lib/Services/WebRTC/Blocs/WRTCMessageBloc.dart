@@ -110,18 +110,7 @@ class WRTCMessageBloc {
                                 cursorWidth: 2,
                                 cursorColor: Colors.blue.shade100,
                                 cursorRadius: Radius.circular(5),
-                                style: TextStyle(
-                                    color: this.messages[i].type ==
-                                            WRTCMessageType.join_room
-                                        ? Colors.blue.shade600
-                                        : this.messages[i].type ==
-                                                WRTCMessageType.leave_room
-                                            ? Colors.red.shade600
-                                            : this.messages[i].type ==
-                                                    WRTCMessageType.info
-                                                ? Colors.green.shade600
-                                                : Colors.white,
-                                    fontSize: 10),
+                                style: _MessageStyle(this.messages[i].type),
                               ),
                             ),
                           );
@@ -204,6 +193,21 @@ class WRTCMessageBloc {
         ],
       ),
     );
+  }
+
+  TextStyle _MessageStyle(WRTCMessageType type) {
+    return TextStyle(
+        color: type == WRTCMessageType.join_room
+            ? Colors.blue.shade600
+            : type == WRTCMessageType.leave_room
+                ? Colors.red.shade600
+                : type == WRTCMessageType.info ||
+                        type == WRTCMessageType.start_screen
+                    ? Colors.green.shade600
+                    : type == WRTCMessageType.stop_screen
+                        ? Colors.yellow.shade800
+                        : Colors.white,
+        fontSize: 10);
   }
 
   Widget _MessageHeader({required Function closeClick}) {

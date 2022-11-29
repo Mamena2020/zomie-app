@@ -108,17 +108,26 @@ class WRTCSocketEvent {
 
         // --------------------------------------------------- join room
         if (data["type"] == "join") {
+          String _message = producer.name + " join the room";
+          WRTCMessageType _messageType = WRTCMessageType.join_room;
+          if (producer.type == ProducerType.screen) {
+            _message = producer.name + " start screen share";
+            _messageType = WRTCMessageType.start_screen;
+          }
+
           rtcMessage = RTCMessage(
-              producer: producer,
-              messsage: producer.name + " join the room",
-              type: WRTCMessageType.join_room);
+              producer: producer, messsage: _message, type: _messageType);
         }
         // --------------------------------------------------- leave room
         if (data["type"] == "leave") {
+          String _message = producer.name + " leave the room";
+          WRTCMessageType _messageType = WRTCMessageType.join_room;
+          if (producer.type == ProducerType.screen) {
+            _message = producer.name + " stop screen share";
+            _messageType = WRTCMessageType.stop_screen;
+          }
           rtcMessage = RTCMessage(
-              producer: producer,
-              messsage: producer.name + " leave the room",
-              type: WRTCMessageType.leave_room);
+              producer: producer, messsage: _message, type: _messageType);
           if (WRTCService.instance().wrtcProducer!.peer != null) {
             WRTCService.instance()
                 .wrtcProducer!
@@ -131,12 +140,12 @@ class WRTCSocketEvent {
               .wrtcProducer!
               .UpdateConsumer(producer: producer);
         }
-        // --------------------------------------------------- receive message
+        // ---------------------------------------------------  message
         if (data["type"] == "message") {
           rtcMessage = RTCMessage.fromJson(data);
         }
 
-        // ---------------- Adding event
+        // ---------------- Adding Message
         if (rtcMessage.type != WRTCMessageType.none) {
           WRTCMessageBloc.instance().input.add(rtcMessage);
         }

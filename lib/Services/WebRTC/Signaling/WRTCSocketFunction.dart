@@ -61,14 +61,8 @@ class WRTCSocketFunction {
   }
 
   static Future<void> endCall(
-      {required String producer_id,
-      required String producer_id_screen,
-      required String room_id}) async {
-    Map _data = {
-      "producer_id": producer_id,
-      "producer_id_screen": producer_id_screen,
-      "room_id": room_id
-    };
+      {required String producer_id, required String room_id}) async {
+    Map _data = {"producer_id": producer_id, "room_id": room_id};
 
     WRTCSocket.instance().socket.emit("end-call", _data);
   }
