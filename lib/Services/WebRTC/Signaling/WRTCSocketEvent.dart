@@ -117,11 +117,13 @@ class WRTCSocketEvent {
           if (producer.type == ProducerType.screen) {
             _message = producer.name + " start screen share";
             _messageType = WRTCMessageType.start_screen;
+            WRTCAudio.instance().playNotif(audioName: "notif_2.wav");
+          } else {
+            WRTCAudio.instance().playNotif(audioName: "notif_1.wav");
           }
 
           rtcMessage = RTCMessage(
               producer: producer, messsage: _message, type: _messageType);
-          WRTCAudio.instance().playNotif();
         }
         // --------------------------------------------------- leave room
         if (data["type"] == "leave") {

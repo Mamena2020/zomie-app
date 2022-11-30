@@ -26,9 +26,9 @@ class _SettingViewState extends State<SettingView> {
   bool isLoad = false;
   RoomLifeTime roomLifeTimeSelected = RoomLifeTime.roomLifeTimes.first;
   RoomBitrate roomBitrateVideoSelected =
-      RoomBitrate.RoomBitrates[RoomBitrate.GetBitrateIndex(90)];
+      RoomBitrate.RoomBitrates[RoomBitrate.GetBitrateIndex(75)];
   RoomBitrate roomBitrateScreenSelected =
-      RoomBitrate.RoomBitrates[RoomBitrate.GetBitrateIndex(250)];
+      RoomBitrate.RoomBitrates[RoomBitrate.GetBitrateIndex(125)];
   Load() {
     //----------------------------- lifetime
     int i =

@@ -779,7 +779,8 @@ class WRTCProducer {
   _filterIncomingProducers({required List<Producer> producers}) async {
     List<ConsumerM> newConsumersM = [];
     for (int i = 0; i < producers.length; i++) {
-      if (producers[i].user_id == this.producer.user_id) {
+      // remove self if exist in producers list
+      if (producers[i].id == this.producer.id) {
         await producers.removeAt(i);
         i--;
       } else {

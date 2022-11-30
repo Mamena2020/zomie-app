@@ -92,8 +92,8 @@ class WRTCService {
 
   Future<void> StartShareScreen() async {
     Producer _producerScreen = await Producer.initGenerate();
-    _producerScreen.user_id == this.producer.user_id;
-    _producerScreen.name == this.producer.name;
+    _producerScreen.user_id = this.producer.user_id;
+    _producerScreen.name = this.producer.name + " (Screen)";
 
     this.wrtcShareScreen = new WRTCProducer(
         producer: _producerScreen,

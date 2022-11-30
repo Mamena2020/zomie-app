@@ -20,8 +20,8 @@ class Setting {
       passwordRequired: false,
       askWhenJoin: false,
       roomLifeTime: RoomLifeTime.init(),
-      screen_bitrate: 250,
-      video_bitrate: 90);
+      screen_bitrate: 125,
+      video_bitrate: 75);
 
   factory Setting.fromJson(Map<dynamic, dynamic> json) => Setting(
       passwordRequired: json["passwordRequired"] != null
