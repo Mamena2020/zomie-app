@@ -62,12 +62,12 @@ This app also using <a href="https://github.com/Mamena2020/zomie-turn-server">Zo
 #How to use
 - create dotenv file
    - cmd: cp dotenv.example dotenv
-   - fill in credentials
+   - fill in credentials 
      ```
       MEDIA_SERVER_HOST = "localhost:5000"
 
-      ALLOW_TURN_SERVER = "true"  # "true" or "false"
-      TURN_SERVER_HOST = "turn:ip:port"
+      ALLOW_TURN_SERVER = "true" 
+      TURN_SERVER_HOST = "turn:ip:port" #example: "turn:192.168.1.9:3478"
       TURN_SERVER_USERNAME = "zomie"
       TURN_SERVER_PASSWORD = "password"
 
