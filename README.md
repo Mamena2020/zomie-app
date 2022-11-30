@@ -101,6 +101,14 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
 
 # Note
 
+- WebRTC
+  - Support Platform
+     - All Platform
+  - STUNT/TURN server
+     - STUNT:  "urls": "stun:stun.stunprotocol.org"
+     - :heavy_exclamation_mark: TURN: haven't used this yet, so. if the stun server fails to identify the client's address, then it can cause the connection to drop
+
+
 - Socket io  
   - Platform
     - All Platform
@@ -114,9 +122,7 @@ this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time commun
       - server(nodejs): "socket.io": "^4.5.3"
       - client(flutter):  socket_io_client: ^2.0.0
     ```
-- WebRTC 
-  - Support Platform
-    - All Platform
+
   
  
 
