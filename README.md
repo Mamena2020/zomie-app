@@ -116,7 +116,7 @@ This app also using <a href="https://github.com/Mamena2020/zomie-turn-server">Zo
      - All Platform
   - STUNT/TURN server
      - STUNT:  "urls": "stun:stun.stunprotocol.org"
-     - :heavy_exclamation_mark: TURN: haven't used this yet, so. if the stun server fails to identify the client's address, then it can cause the connection to drop
+     - TURN: <a href="https://github.com/Mamena2020/zomie-turn-server">Zomie TURN Server </a>
 
 
 - Socket io  
