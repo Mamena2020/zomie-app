@@ -5,7 +5,7 @@ Online meeting app like google meet, build with flutter for all platforms.
 this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time communication, and <a href="https://socket.io">socket.io</a> for signaling & messaging.
 <a href="https://github.com/Mamena2020/zomie-server"> Server<a> running on nodejs with SFU architecture which features the following data transmission processes between the media server and the endpoints (client).
 
-This app also using <a href="https://github.com/Mamena2020/zomie-turn-server"> TURN Server </a> as relays media,
+This app also using <a href="https://github.com/Mamena2020/zomie-turn-server">Zomie TURN Server </a> as relays media,
 <a href="https://github.com/Mamena2020/zomie-turn-server"> TURN Server </a> work as a backup if STUN Server won't work because client device behind of symmetric NAT
 
 
@@ -65,6 +65,12 @@ This app also using <a href="https://github.com/Mamena2020/zomie-turn-server"> T
    - fill in credentials
      ```
       MEDIA_SERVER_HOST = "localhost:5000"
+
+      ALLOW_TURN_SERVER = "true"  # "true" or "false"
+      TURN_SERVER_HOST = "turn:ip:port"
+      TURN_SERVER_USERNAME = "zomie"
+      TURN_SERVER_PASSWORD = "password"
+
      ```
 
 - android config
