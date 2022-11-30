@@ -144,7 +144,8 @@ class WRTCProducer {
     }
 
     this.peer = await createPeerConnection(
-        WRTCCOnfig.configurationPeerConnection, WRTCCOnfig.offerSdpConstraints);
+        WRTCCOnfig.configurationPeerConnection(),
+        WRTCCOnfig.offerSdpConstraints);
 
     this.peer!.addTransceiver(
         kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,

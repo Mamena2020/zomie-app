@@ -1,1 +1,7 @@
 MEDIA_SERVER_HOST = "http://localhost:5000"
+
+
+ALLOW_TURN_SERVER = "true"  # "true" or "false"
+TURN_SERVER_HOST = "turn:ip:port"
+TURN_SERVER_USERNAME = "zomie"
+TURN_SERVER_PASSWORD = "password"

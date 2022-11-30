@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:zomie_app/Services/WebRTC/Enums/enums.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Producer.dart';
 
 class ConsumerM {
@@ -167,7 +168,9 @@ class ConsumerM {
                 child: Padding(
                   padding: const EdgeInsets.all(3.0),
                   child: Text(
-                    this.producer.name,
+                    this.producer.type == ProducerType.screen
+                        ? this.producer.name + " (Screen)"
+                        : this.producer.name,
                     style: TextStyle(fontSize: 11, color: Colors.white),
                   ),
                 ),
