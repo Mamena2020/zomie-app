@@ -3,69 +3,65 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class WRTCCOnfig {
   static String host = dotenv.get("MEDIA_SERVER_HOST", fallback: "");
 
-  // static const configurationPeerConnection = {
-  //   "sdpSemantics": "unified-plan", // Add this line for support windows
-  //   "iceServers": [
-  //     {
-  //       "urls": "stun:stun.stunprotocol.org"
-  //       // urls: "stun:stun.l.google.com:19302?transport=tcp"
-  //     },
-  //     // {
-  //     //   // "urls": "stun:stun.stunprotocol.org"
-  //     //   "urls": "stun:stun.l.google.com:19302?transport=tcp"
-  //     // }
-  //   ]
-  // };
-
   static Map<String, dynamic> configurationPeerConnection() {
+    // Map<String, String> stun2 = {"urls": "stun:stun.l.google.com:19302"};
+
+    var iceServers = [
+      // //---------------------------- open relay
+      {"urls": "stun:stun.stunprotocol.org"},
+      {
+        "urls": "stun:openrelay.metered.ca:80",
+        "username": "openrelayproject",
+        "credential": "openrelayproject",
+      },
+      {
+        "urls": "turn:openrelay.metered.ca:80",
+        "username": "openrelayproject",
+        "credential": "openrelayproject",
+      },
+      {
+        "urls": "turn:openrelay.metered.ca:443",
+        "username": "openrelayproject",
+        "credential": "openrelayproject",
+      },
+      {
+        "urls": "turn:openrelay.metered.ca:80?transport=tcp",
+        "username": "openrelayproject",
+        "credential": "openrelayproject",
+      },
+      {
+        "urls": "turn:openrelay.metered.ca:443?transport=tcp",
+        "username": "openrelayproject",
+        "credential": "openrelayproject",
+      },
+      {
+        "urls": "turns:openrelay.metered.ca:443",
+        "username": "openrelayproject",
+        "credential": "openrelayproject",
+      },
+    ];
+
+    String dotenvAllowTurnServer =
+        dotenv.get("ALLOW_TURN_SERVER", fallback: "false");
     bool allowTurnServer =
-        dotenv.get("ALLOW_TURN_SERVER", fallback: "false") == "true"
+        dotenvAllowTurnServer == "true" || dotenvAllowTurnServer == true
             ? true
             : false;
-    Map<String, String> stun = {"urls": "stun:stun.stunprotocol.org"};
 
-    if (allowTurnServer) {
-      print("using turn server");
-      String turnServerHost = dotenv.get("TURN_SERVER_HOST", fallback: "");
-      String turnServerUsername =
-          dotenv.get("TURN_SERVER_USERNAME", fallback: "");
-      String turnServerPassword =
-          dotenv.get("TURN_SERVER_PASSWORD", fallback: "");
-      print(turnServerHost);
-      print(turnServerUsername);
-      print(turnServerPassword);
-
-      return {
-        "sdpSemantics": "unified-plan",
-        'iceServers': [
-          stun,
-          {
-            'url': turnServerHost,
-            'username': turnServerUsername,
-            'credential': turnServerPassword
-          },
-        ]
+    String turnServerHost = dotenv.get("TURN_SERVER_HOST");
+    String turnServerUsername = dotenv.get("TURN_SERVER_USERNAME");
+    String turnServerPassword = dotenv.get("TURN_SERVER_PASSWORD");
+    if (turnServerHost != "" && turnServerHost.length > 3 && allowTurnServer) {
+      print("using turn server costume");
+      var turn = {
+        'urls': turnServerHost,
+        'username': turnServerUsername,
+        'credential': turnServerPassword
       };
+      iceServers.add(turn);
     }
-    return {
-      "sdpSemantics": "unified-plan",
-      'iceServers': [stun]
-    };
+    return {"sdpSemantics": "unified-plan", 'iceServers': iceServers};
   }
-
-  // static const configurationPeerConnection = {
-  //   'iceServers': [
-  //     {'url': 'stun:stun.l.google.com:19302'},
-  //     /*
-  //      * turn server configuration example.
-  //     {
-  //       'url': 'turn:123.45.67.89:3478',
-  //       'username': 'change_to_real_user',
-  //       'credential': 'change_to_real_secret'
-  //     },
-  //     */
-  //   ]
-  // };
 
   static const offerSdpConstraints = {
     "mandatory": {

@@ -72,7 +72,12 @@ class WRTCSocketEvent {
             WRTCService.instance().wrtcProducer!.peer != null &&
             WRTCService.instance().wrtcProducer!.producer.id ==
                 data["producer_id"]) {
-          WRTCService.instance().wrtcProducer!.peer!.addCandidate(_candidate);
+          print("<<<<<~ incoming candidate from server");
+          print(data["candidate"]);
+          print("<<<<<| incoming candidate from server");
+          WRTCService.instance()
+              .wrtcProducer!
+              .storeRemoteCandidateFromServer(_candidate);
         }
         if (data["type"] == "screen" &&
             WRTCService.instance().wrtcShareScreen != null &&

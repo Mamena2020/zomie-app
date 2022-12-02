@@ -5,8 +5,9 @@ Online meeting app like google meet, build with flutter for all platforms.
 this app uses <a href="https://webrtc.org">WebRTC</a> for media real-time communication, and <a href="https://socket.io">socket.io</a> for signaling & messaging.
 <a href="https://github.com/Mamena2020/zomie-server"> Server<a> running on nodejs with SFU architecture which features the following data transmission processes between the media server and the endpoints (client).
 
-This app also using <a href="https://github.com/Mamena2020/zomie-turn-server">Zomie TURN Server </a> as relays media,
-<a href="https://github.com/Mamena2020/zomie-turn-server"> TURN Server </a> work as a backup if STUN Server won't work because client device behind of symmetric NAT
+This app also using TURN Server as relays media, work as a backup plan if STUN Server won't work because client device behind of symmetric NAT. TURN server is already end-to-end encrypted by the peers and the TURN Server cannot decode/read the encrypted packet, it just relays the packet to other peers. By default TURN already setup in file (lib/Services/WebRTC/Config/WRTCConfig.dart)
+using free TURN Servers from <a href="https://www.metered.ca/tools/openrelay/">OPEN RELAY</a>.
+but you can add your own Turn server using <a href="https://github.com/Mamena2020/zomie-turn-server">Zomie TURN Server </a> as relays media.
 
 
 - Features
@@ -62,14 +63,14 @@ This app also using <a href="https://github.com/Mamena2020/zomie-turn-server">Zo
 #How to use
 - create dotenv file
    - cmd: cp dotenv.example dotenv
-   - fill in credentials 
+   - fill in credentials, you can ignore (TURN_SERVER_HOST, TURN_SERVER_USERNAME, TURN_SERVER_PASSWORD), because by default its already setup, but its okay if you want to add more your own TURN server.
      ```
       MEDIA_SERVER_HOST = "localhost:5000"
 
-      ALLOW_TURN_SERVER = "true" 
+      ALLOW_TURN_SERVER = "false" 
       TURN_SERVER_HOST = "turn:ip:port" #example: "turn:192.168.1.9:3478"
-      TURN_SERVER_USERNAME = "zomie"
-      TURN_SERVER_PASSWORD = "password"
+      TURN_SERVER_USERNAME = ""    #exampe: "zomie"
+      TURN_SERVER_PASSWORD = "" #example: "password"
 
      ```
 
@@ -116,7 +117,8 @@ This app also using <a href="https://github.com/Mamena2020/zomie-turn-server">Zo
      - All Platform
   - STUNT/TURN server
      - STUNT:  "urls": "stun:stun.stunprotocol.org"
-     - TURN: <a href="https://github.com/Mamena2020/zomie-turn-server">Zomie TURN Server </a>
+        - Stunt will not working if client is under symmetric NAT. 
+     - TURN: by default TURN server using from <a href="https://www.metered.ca/tools/openrelay">Open Relay</a>, or you can add more using <a href="https://github.com/Mamena2020/zomie-turn-server">Zomie TURN Server </a>
 
 
 - Socket io  

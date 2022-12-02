@@ -38,7 +38,7 @@ class WRTCAudio {
         // _player.play(DeviceFileSource('assets/assets/audio/notif_1.wav'));
       } else {
         // _player.play(DeviceFileSource('asset/audio/notif_1.wav'));
-        _player.play(DeviceFileSource('asset/audio/' + audioName));
+        _player.play(DeviceFileSource('audio/' + audioName));
       }
     } catch (e) {
       print(e);

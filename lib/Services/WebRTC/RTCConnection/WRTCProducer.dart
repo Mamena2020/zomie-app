@@ -46,6 +46,9 @@ class WRTCProducer {
     this.videoRenderer.initialize();
   }
 
+  List<Candidate> localCandidates = [];
+  List<RTCIceCandidate> remoteCandidates = [];
+
   Future<void> MuteUnMute() async {
     if (this.stream != null) {
       this.stream!.getAudioTracks()[0].enabled =
@@ -103,8 +106,6 @@ class WRTCProducer {
     }
   }
 
-  List<Candidate> candidates = [];
-
   bool firstConnect = false;
 
   GetUserMedia() async {
@@ -131,7 +132,8 @@ class WRTCProducer {
    * create peer connection to server
    */
   Future<void> CreateConnection() async {
-    candidates.clear();
+    localCandidates.clear();
+    remoteCandidates.clear();
     if (this.stream == null) {
       if (this.callType == CallType.screenSharing) {
         await GetDisplayMedia();
@@ -158,6 +160,7 @@ class WRTCProducer {
 
     await _setTrack();
 
+    _onIceCandidate();
     //----------------- process handshake
     // renegitiaion needed allways call wen setTrack it trigger to addtrack
     await _sdpProccess();
@@ -168,8 +171,6 @@ class WRTCProducer {
     //   // }
     // };
     onStopLocalStream();
-
-    _onIceCandidate();
 
     this.peer!.onIceConnectionState = (e) {
       try {
@@ -247,14 +248,13 @@ class WRTCProducer {
       await WRTCUtils.SetRemoteDescriptionFromJson(
           peer: peer!, sdpRemote: body["data"]["sdp"]);
       print("p-@@@ success set remote producer");
-
+      ExchangeIceCandidate();
       await WRTCUtils.setBitrate(
           peer: this.peer!,
           bitrate: this.producerType == ProducerType.user
               ? this.room.video_bitrate
               : this.room.screen_bitrate);
 
-      await _AddCandidatesToServer();
       WRTCSocketFunction.NotifyServer(
           type: NotifyType.join,
           producer_id: this.producer.id,
@@ -264,6 +264,16 @@ class WRTCProducer {
     //   print("p-error _onRenegotiationNeeded");
     //   print(e);
     // }
+  }
+
+  ExchangeIceCandidate() async {
+    Future.delayed(
+        Duration(
+          seconds: 3,
+        ), () async {
+      await _AddRemoteCandidateToLocal();
+      _SendLocalCandidatesToServer();
+    });
   }
 
   // onTrack() {
@@ -328,8 +338,9 @@ class WRTCProducer {
   _onIceCandidate() {
     this.peer!.onIceCandidate = (e) {
       if (e.candidate != null) {
-        print("p-fire candidate to stored in candidates");
-        candidates.add(Candidate(
+        print("p- add local candidate");
+        print(e.candidate);
+        localCandidates.add(Candidate(
             candidate: e.candidate!,
             sdpMid: e.sdpMid!,
             sdpMLineIndex: e.sdpMLineIndex!));
@@ -337,13 +348,31 @@ class WRTCProducer {
     };
   }
 
-  _AddCandidatesToServer() async {
-    for (var c in this.candidates) {
+  _SendLocalCandidatesToServer() async {
+    print("p=> SEND ALL CANDIDATE TO SERVER:" +
+        localCandidates.length.toString());
+    for (var c in this.localCandidates) {
       print("p-add candidate to server");
       await WRTCSocketFunction.addCandidateToServer(
           producer_id: this.producer.id, candidate: c);
-      this.candidates.clear();
     }
+    this.localCandidates.clear();
+  }
+
+  //1
+  storeRemoteCandidateFromServer(RTCIceCandidate c) async {
+    remoteCandidates.add(c);
+  }
+
+//2
+  _AddRemoteCandidateToLocal() async {
+    print("p=> ADD ALL CANDIDATE TO LOCAL: " +
+        remoteCandidates.length.toString());
+    for (var c in this.remoteCandidates) {
+      print("p-add candidate to local");
+      this.peer!.addCandidate(c);
+    }
+    this.remoteCandidates.clear();
   }
 
   bool _isMinimizeMedia = false;
