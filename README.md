@@ -11,6 +11,7 @@ but you can add your own Turn server using <a href="https://github.com/Mamena202
 
 
 - Features
+  - No account needed
   - Create Room 
      - life time (default 1 minute)
        - after life time & if there is no one in room, then room will destroy itself
@@ -20,6 +21,7 @@ but you can add your own Turn server using <a href="https://github.com/Mamena202
        - permission for microphone & camera
        - enter password (if required)
        - change user name
+     - join room  
   - Room meeting
      - video & audio communication
         - muted/unmuted microphone
