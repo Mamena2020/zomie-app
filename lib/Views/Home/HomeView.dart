@@ -111,7 +111,7 @@ class _HomeViewState extends State<HomeView> {
                 setState(() {});
               },
               decoration: InputDecoration(
-                hintText: 'Room id or link',
+                hintText: 'Room id',
                 hintStyle: TextStyle(color: Colors.grey.shade400),
                 contentPadding: EdgeInsets.symmetric(vertical: 15.0),
               ),

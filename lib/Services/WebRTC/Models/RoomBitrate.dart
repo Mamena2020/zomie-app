@@ -3,7 +3,7 @@ class RoomBitrate {
   String unit;
   RoomBitrate({required this.bitrate, required this.unit});
 
-  factory RoomBitrate.init() => new RoomBitrate(bitrate: 90, unit: "90 kbps");
+  factory RoomBitrate.init() => new RoomBitrate(bitrate: 60, unit: "60 kbps");
 
   static List<RoomBitrate> RoomBitrates = [
     new RoomBitrate(unit: "2000 kbps", bitrate: 2000),
@@ -13,6 +13,7 @@ class RoomBitrate {
     new RoomBitrate(unit: "125 kbps", bitrate: 125),
     new RoomBitrate(unit: "90 kbps", bitrate: 90),
     new RoomBitrate(unit: "75 kbps", bitrate: 75),
+    new RoomBitrate(unit: "60 kbps", bitrate: 60),
   ];
 
   static int GetBitrateIndex(int br) {

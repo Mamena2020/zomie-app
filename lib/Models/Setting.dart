@@ -1,4 +1,4 @@
-import 'package:zomie_app/Models/RoomLifeTime.dart';
+import 'package:zomie_app/Services/WebRTC/Models/RoomLifeTime.dart';
 
 class Setting {
   bool passwordRequired;
@@ -20,8 +20,8 @@ class Setting {
       passwordRequired: false,
       askWhenJoin: false,
       roomLifeTime: RoomLifeTime.init(),
-      screen_bitrate: 125,
-      video_bitrate: 75);
+      screen_bitrate: 90,
+      video_bitrate: 60);
 
   factory Setting.fromJson(Map<dynamic, dynamic> json) => Setting(
       passwordRequired: json["passwordRequired"] != null
@@ -34,8 +34,8 @@ class Setting {
       roomLifeTime: json["roomLifeTime"] != null
           ? RoomLifeTime.fromJson(json["roomLifeTime"])
           : RoomLifeTime.init(),
-      video_bitrate: json["video_bitrate"] ?? 90,
-      screen_bitrate: json["screen_bitrate"] ?? 250);
+      video_bitrate: json["video_bitrate"] ?? 60,
+      screen_bitrate: json["screen_bitrate"] ?? 90);
 
   Map<String, dynamic> toJson() => {
         "passwordRequired": this.passwordRequired,

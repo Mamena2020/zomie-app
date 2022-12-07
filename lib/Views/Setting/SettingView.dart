@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zomie_app/Models/RoomBitrate.dart';
-import 'package:zomie_app/Models/RoomLifeTime.dart';
+import 'package:zomie_app/Services/WebRTC/Models/RoomBitrate.dart';
+import 'package:zomie_app/Services/WebRTC/Models/RoomLifeTime.dart';
 import 'package:zomie_app/StateManagement/Providers/proSet.dart';
 import 'package:zomie_app/Widgets/Widgets.dart';
 
