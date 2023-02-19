@@ -67,46 +67,58 @@ class ConsumerM {
       width: size.width,
       child: Stack(
         children: [
-          Container(
-              // height: constraint.hei,
-              // width: constraint.minWidth,
-              margin: EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
-              decoration: BoxDecoration(color: Colors.black),
-              child: StreamBuilder<MediaStream>(
-                  initialData: this._mediaStream,
-                  stream: this._streamController.stream,
-                  builder: (_, snapshot) {
-                    if (kIsWeb) {
-                      if (snapshot.hasData && snapshot.data != null) {
-                        // this._mediaStream = snapshot.data!;
-                        this._videoRenderer.srcObject = snapshot.data!;
-                        return _show();
+          Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Container(
+                // height: constraint.hei,
+                // width: constraint.minWidth,
+                // margin: EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    new BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 20.0,
+                    ),
+                  ],
+                ),
+                child: StreamBuilder<MediaStream>(
+                    initialData: this._mediaStream,
+                    stream: this._streamController.stream,
+                    builder: (_, snapshot) {
+                      if (kIsWeb) {
+                        if (snapshot.hasData && snapshot.data != null) {
+                          // this._mediaStream = snapshot.data!;
+                          this._videoRenderer.srcObject = snapshot.data!;
+                          return _show();
+                        }
+                        return Center(
+                            child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Text(
+                            //   this._mediaStream == null ? "NULL" : "EXIST",
+                            //   style: TextStyle(color: Colors.teal),
+                            // ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: CircularProgressIndicator(),
+                            ),
+                          ],
+                        ));
+                      } else {
+                        if (snapshot.hasData) {
+                          this._mediaStream = snapshot.data!;
+                          this._videoRenderer.srcObject = snapshot.data!;
+                          return _show();
+                        }
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
                       }
-                      return Center(
-                          child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Text(
-                          //   this._mediaStream == null ? "NULL" : "EXIST",
-                          //   style: TextStyle(color: Colors.teal),
-                          // ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CircularProgressIndicator(),
-                          ),
-                        ],
-                      ));
-                    } else {
-                      if (snapshot.hasData) {
-                        this._mediaStream = snapshot.data!;
-                        this._videoRenderer.srcObject = snapshot.data!;
-                        return _show();
-                      }
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                  })),
+                    })),
+          ),
 
           // ---------------------------------------------------------- pined
           isShowPined
@@ -184,7 +196,10 @@ class ConsumerM {
 
   Widget _show() {
     return this.producer.hasMedia.video
-        ? RTCVideoView(this._videoRenderer)
+        ? RTCVideoView(
+            this._videoRenderer,
+            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
+          )
         : Center(
             child: Icon(
               Icons.videocam_off,

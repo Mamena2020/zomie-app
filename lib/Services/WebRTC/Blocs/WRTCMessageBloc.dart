@@ -40,6 +40,9 @@ class WRTCMessageBloc {
 
   bool isShow = false;
 
+  /**
+   * Widget show messages
+   */
   Widget Show({required double screenWidth, required Function closeClick}) {
     return AnimatedContainer(
       height: double.infinity,
@@ -49,6 +52,8 @@ class WRTCMessageBloc {
       duration: Duration(milliseconds: 200),
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10), bottomLeft: Radius.circular(10)),
         boxShadow: [
           new BoxShadow(
             color: Colors.black.withOpacity(0.3),
@@ -56,51 +61,38 @@ class WRTCMessageBloc {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          _MessageHeader(closeClick: closeClick),
-          // ---------------------------------------------------- list messages
-          Expanded(
-            child: StreamBuilder<List<RTCMessage>>(
-              initialData: this.messages,
-              stream: this.output,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return ListView.builder(
-                      itemCount: this.messages.length,
-                      itemBuilder: (_, i) {
-                        if (this.messages[i].type == WRTCMessageType.message) {
-                          return ListTile(
-                            title: SelectableText(
-                              this.messages[i].producer.name,
-                              toolbarOptions: ToolbarOptions(
-                                copy: true,
-                                selectAll: true,
+      child: ClipRRect(
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10), bottomLeft: Radius.circular(10)),
+        child: Column(
+          children: [
+            _MessageHeader(closeClick: closeClick),
+            // ---------------------------------------------------- list messages
+            Expanded(
+              child: StreamBuilder<List<RTCMessage>>(
+                initialData: this.messages,
+                stream: this.output,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return ListView.builder(
+                        itemCount: this.messages.length,
+                        itemBuilder: (_, i) {
+                          if (this.messages[i].type ==
+                              WRTCMessageType.message) {
+                            return ListTile(
+                              title: SelectableText(
+                                this.messages[i].producer.name,
+                                toolbarOptions: ToolbarOptions(
+                                  copy: true,
+                                  selectAll: true,
+                                ),
+                                showCursor: true,
+                                cursorWidth: 2,
+                                cursorColor: Colors.blue.shade100,
+                                cursorRadius: Radius.circular(5),
+                                style: TextStyle(fontSize: 13),
                               ),
-                              showCursor: true,
-                              cursorWidth: 2,
-                              cursorColor: Colors.blue.shade100,
-                              cursorRadius: Radius.circular(5),
-                              style: TextStyle(fontSize: 13),
-                            ),
-                            subtitle: SelectableText(
-                              this.messages[i].messsage,
-                              toolbarOptions: ToolbarOptions(
-                                copy: true,
-                                selectAll: true,
-                              ),
-                              showCursor: true,
-                              cursorWidth: 2,
-                              cursorColor: Colors.blue.shade100,
-                              cursorRadius: Radius.circular(5),
-                              style: TextStyle(fontSize: 13),
-                            ),
-                          );
-                        } else {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Center(
-                              child: SelectableText(
+                              subtitle: SelectableText(
                                 this.messages[i].messsage,
                                 toolbarOptions: ToolbarOptions(
                                   copy: true,
@@ -110,87 +102,105 @@ class WRTCMessageBloc {
                                 cursorWidth: 2,
                                 cursorColor: Colors.blue.shade100,
                                 cursorRadius: Radius.circular(5),
-                                style: _MessageStyle(this.messages[i].type),
+                                style: TextStyle(fontSize: 13),
                               ),
-                            ),
-                          );
-                        }
-                      });
-                }
-                return SizedBox();
-              },
+                            );
+                          } else {
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Center(
+                                child: SelectableText(
+                                  this.messages[i].messsage,
+                                  toolbarOptions: ToolbarOptions(
+                                    copy: true,
+                                    selectAll: true,
+                                  ),
+                                  showCursor: true,
+                                  cursorWidth: 2,
+                                  cursorColor: Colors.blue.shade100,
+                                  cursorRadius: Radius.circular(5),
+                                  style: _MessageStyle(this.messages[i].type),
+                                ),
+                              ),
+                            );
+                          }
+                        });
+                  }
+                  return SizedBox();
+                },
+              ),
             ),
-          ),
-          // ---------------------------------------------------- textfiled
+            // ---------------------------------------------------- textfiled
 
-          AnimatedContainer(
-            duration: Duration(microseconds: 100),
-            // height: 60,
-            width: isShow ? double.infinity : 0,
-            decoration: BoxDecoration(color: Colors.grey.shade100),
-            child: !isShow
-                ? SizedBox()
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextField(
-                            controller: _tecMessage,
-                            maxLength: 1000,
-                            keyboardType: TextInputType.multiline,
-                            minLines: 1,
-                            maxLines: 7,
-                            decoration: InputDecoration(
-                                counterText: '',
-                                labelText: "Write your message",
-                                labelStyle: TextStyle(
-                                  fontSize: 13,
-                                )),
-                            onSubmitted: (v) {
-                              _SendMessage();
-                            },
+            AnimatedContainer(
+              duration: Duration(microseconds: 100),
+              // height: 60,
+              width: isShow ? double.infinity : 0,
+              decoration: BoxDecoration(color: Colors.grey.shade100),
+              child: !isShow
+                  ? SizedBox()
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextField(
+                              controller: _tecMessage,
+                              maxLength: 1000,
+                              keyboardType: TextInputType.multiline,
+                              minLines: 1,
+                              maxLines: 7,
+                              decoration: InputDecoration(
+                                  counterText: '',
+                                  labelText: "Write your message",
+                                  labelStyle: TextStyle(
+                                    fontSize: 13,
+                                  )),
+                              onSubmitted: (v) {
+                                _SendMessage();
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8.0, bottom: 8),
-                        child: InkWell(
-                          onTap: () async {
-                            _SendMessage();
-                          },
-                          child: new Container(
-                            width: 35.0,
-                            height: 35.0,
-                            decoration: new BoxDecoration(
-                              color: Colors.teal.shade700,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                new BoxShadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    blurRadius: 10.0,
-                                    spreadRadius: 10),
-                              ],
-                            ),
-                            child: new Center(
-                              child: RotationTransition(
-                                turns: new AlwaysStoppedAnimation(-45 / 360),
-                                child: Icon(
-                                  Icons.send,
-                                  color: Colors.white,
-                                  size: 15,
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0, bottom: 8),
+                          child: InkWell(
+                            onTap: () async {
+                              _SendMessage();
+                            },
+                            child: new Container(
+                              width: 35.0,
+                              height: 35.0,
+                              decoration: new BoxDecoration(
+                                color: Colors.teal.shade700,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  new BoxShadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      blurRadius: 10.0,
+                                      spreadRadius: 10),
+                                ],
+                              ),
+                              child: new Center(
+                                child: RotationTransition(
+                                  turns: new AlwaysStoppedAnimation(-45 / 360),
+                                  child: Icon(
+                                    Icons.send,
+                                    color: Colors.white,
+                                    size: 15,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-          )
-        ],
+                      ],
+                    ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -217,6 +227,12 @@ class WRTCMessageBloc {
             height: 56,
             decoration: BoxDecoration(
                 color: Colors.teal.shade700,
+                boxShadow: [
+                  new BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 20.0,
+                  ),
+                ],
                 gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -243,7 +259,7 @@ class WRTCMessageBloc {
                 ),
                 Center(
                   child: Text(
-                    "Send message",
+                    "Messages",
                     style: TextStyle(color: Colors.white),
                   ),
                 )

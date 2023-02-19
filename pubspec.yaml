@@ -54,7 +54,8 @@ dependencies:
 
   #realtime tech packages
   # flutter_webrtc: ^0.9.9 #need config-> check doc
-  flutter_webrtc: ^0.9.16
+  # flutter_webrtc: ^0.9.16
+  flutter_webrtc: ^0.9.23
   sdp_transform: ^0.3.0
   socket_io_client: ^2.0.0
 

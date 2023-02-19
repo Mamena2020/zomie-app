@@ -72,9 +72,9 @@ class _LobbyViewState extends State<LobbyView> {
                           children: [
                             producerMedia(),
                             SizedBox(
-                                height: width > height
-                                    ? (width * 0.5) * 0.5
-                                    : width * 0.9,
+                                // height: width > height
+                                //     ? (width * 0.5) * 0.5
+                                //     : width * 0.9,
                                 child: info())
                           ],
                         )
@@ -138,12 +138,18 @@ class _LobbyViewState extends State<LobbyView> {
   TextEditingController tecName = TextEditingController();
   ResponseApi responseName = ResponseApi.init();
 
+  /**
+   * Widget info.
+   * Show User name
+   * Textfield password
+   * And Join button
+   */
   Widget info() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),

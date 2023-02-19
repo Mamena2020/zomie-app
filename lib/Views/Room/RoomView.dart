@@ -1,6 +1,11 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:zomie_app/Router/RouterService.dart';
 import 'package:zomie_app/Services/WebRTC/Blocs/WRTCMessageBloc.dart';
+import 'package:zomie_app/Services/WebRTC/Config/WRTCConfig.dart';
 import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 import 'package:zomie_app/Services/WebRTC/Widgets/WIdgets.dart';
 
@@ -52,6 +57,7 @@ class _RoomViewState extends State<RoomView> {
                 .wrtcProducer!
                 .ShowConsumers(height: height, width: width),
             Actions(),
+            roomInfoIcon(),
             width > 550
                 ? Row(
                     children: [
@@ -110,9 +116,11 @@ class _RoomViewState extends State<RoomView> {
             WRTCWidgets.EndCallButton(context: context),
             // -------------------------------------------------------------------- screen share
             WRTCService.instance().ShareScreenButton(),
+            // -------------------------------------------------------------------- message button
             WRTCWidgets.ChatButton(onTap: () {
               setState(() {});
             })
+            // -------------------------------------------------------------------- message button
           ],
         ),
       ),
@@ -138,6 +146,156 @@ class _RoomViewState extends State<RoomView> {
                   setState(() {});
                 })
             : SizedBox(),
+      ),
+    );
+  }
+
+  bool isShowRoomInfo = false;
+
+  Widget roomInfoIcon() {
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.all(25),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(50),
+                child: new BackdropFilter(
+                  filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                  child: InkWell(
+                    onTap: () async {
+                      setState(() {
+                        isShowRoomInfo = !isShowRoomInfo;
+                      });
+                    },
+                    child: new Container(
+                      width: 25.0,
+                      height: 25.0,
+                      decoration: new BoxDecoration(
+                        color: isShowRoomInfo
+                            ? Colors.grey.shade200.withOpacity(0.3)
+                            : Colors.blue.shade800.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(50),
+                        boxShadow: [
+                          new BoxShadow(
+                              color: isShowRoomInfo
+                                  ? Colors.blue.withOpacity(0.5)
+                                  : Colors.black.withOpacity(0.5),
+                              blurRadius: 10.0,
+                              spreadRadius: 10),
+                        ],
+                      ),
+                      child: new Center(
+                        child: Icon(
+                          MdiIcons.dotsVertical,
+                          color: isShowRoomInfo
+                              ? Colors.blue.shade700
+                              : Colors.white,
+                          size: 17,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Align(alignment: Alignment.bottomRight, child: roomInfo())
+        ],
+      ),
+    );
+  }
+
+  static String roomInfoText = "Room ID: " +
+      WRTCService.instance().room.id +
+      (WRTCService.instance().room.password_required
+          ? "\nPassword: " + WRTCService.instance().room.password!
+          : "") +
+      "\nLink: " +
+      WRTCCOnfig.host +
+      "/room/" +
+      WRTCService.instance().room.id;
+
+  Widget roomInfo() {
+    return Padding(
+      padding: const EdgeInsets.all(40),
+      child: AnimatedContainer(
+        height: isShowRoomInfo ? 200 : 0,
+        width: isShowRoomInfo ? 250 : 0,
+        duration: Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            new BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                blurRadius: 10.0,
+                spreadRadius: 10),
+          ],
+        ),
+        child: !isShowRoomInfo
+            ? SizedBox()
+            : ListView(
+                // mainAxisSize: MainAxisSize.min,
+                children: [
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            isShowRoomInfo = false;
+                          });
+                        },
+                        icon: Icon(Icons.close)),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10.0, right: 10),
+                    child: Row(
+                      // crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(10),
+                            // boxShadow: [
+                            //   new BoxShadow(
+                            //       color: Colors.grey.withOpacity(0.3),
+                            //       blurRadius: 10.0,
+                            //       spreadRadius: 10),
+                            // ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SelectableText(
+                              roomInfoText,
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                  wordSpacing: 2, height: 2, fontSize: 12),
+                            ),
+                          ),
+                        )),
+                        IconButton(
+                            onPressed: () {
+                              Clipboard.setData(
+                                  ClipboardData(text: roomInfoText));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          "Room info copied to clipboard")));
+                            },
+                            icon: Icon(
+                              Icons.copy,
+                              size: 17,
+                            ))
+                      ],
+                    ),
+                  )
+                ],
+              ),
       ),
     );
   }

@@ -2,6 +2,6 @@ MEDIA_SERVER_HOST = "http://localhost:5000"
 
 
 ALLOW_TURN_SERVER = "false" 
-TURN_SERVER_HOST = "" #example: "turn:192.168.1.9:3478"
-TURN_SERVER_USERNAME = ""    #exampe: "zomie"
-TURN_SERVER_PASSWORD = "" #example: "password"
+TURN_SERVER_HOST =  #example: "turn:192.168.1.9:3478"
+TURN_SERVER_USERNAME =     #exampe: "zomie"
+TURN_SERVER_PASSWORD =  #example: "password"

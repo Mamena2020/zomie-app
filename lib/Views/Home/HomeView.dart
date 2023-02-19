@@ -4,9 +4,7 @@ import 'package:zomie_app/Controllers/SettingController.dart';
 import 'package:zomie_app/Router/RouterService.dart';
 import 'package:zomie_app/Services/WebRTC/Controller/WRTCRoomController.dart';
 import 'package:zomie_app/Services/WebRTC/Models/Room.dart';
-import 'package:zomie_app/Services/WebRTC/WRTCService.dart';
 import 'package:zomie_app/StateManagement/Providers/proSet.dart';
-import 'package:zomie_app/Views/Room/RoomView.dart';
 import 'package:zomie_app/Widgets/Widgets.dart';
 
 class HomeView extends StatefulWidget {

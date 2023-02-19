@@ -93,7 +93,7 @@ class WRTCProducer {
           this.stream!.getVideoTracks()[0].enabled = true;
         }
         producer.hasMedia.video = true;
-        await _addStreamCoroller();
+        await _addStreamController();
       } catch (e) {
         print(e);
         print("p-///////////////////// - error enabled video");
@@ -238,7 +238,7 @@ class WRTCProducer {
             },
             body: bodyParams)
         .catchError((e) {
-      print("p-!!!!!! error call api");
+      print("error call api");
     });
 
     if (res.statusCode == 200) {
@@ -247,8 +247,13 @@ class WRTCProducer {
       var body = await jsonDecode(res.body);
       await WRTCUtils.SetRemoteDescriptionFromJson(
           peer: peer!, sdpRemote: body["data"]["sdp"]);
-      print("p-@@@ success set remote producer");
+      print("success set remote producer");
+
+      WRTCService.instance().room.password =
+          body["data"]["room_password"] ?? null;
+
       ExchangeIceCandidate();
+
       await WRTCUtils.setBitrate(
           peer: this.peer!,
           bitrate: this.producerType == ProducerType.user
@@ -290,6 +295,9 @@ class WRTCProducer {
   //   }
   // }
 
+  /**
+   * Set Current producer Track
+   */
   _setTrack() async {
     try {
       print("p-~~~~~~~~~~set track: stream id: " + this.stream!.id);
@@ -301,7 +309,7 @@ class WRTCProducer {
           });
         }
 
-        await _addStreamCoroller();
+        await _addStreamController();
       }
     } catch (e) {
       print("p-!!!!!!!!!!! error set track media stream");
@@ -309,6 +317,9 @@ class WRTCProducer {
     }
   }
 
+  /**
+   * Handling sdp from server and after that, send back current sdp to server again.
+   */
   handleSdpFromServer(
     dynamic sdp,
   ) async {
@@ -327,7 +338,7 @@ class WRTCProducer {
     }
   }
 
-  _addStreamCoroller() {
+  _addStreamController() {
     if (_streamController.isClosed) {
       _streamController = StreamController<MediaStream>.broadcast();
     }
@@ -335,6 +346,9 @@ class WRTCProducer {
     this.videoRenderer.srcObject = this.stream!;
   }
 
+  /**
+   * Stored current Ice Candidate
+   */
   _onIceCandidate() {
     this.peer!.onIceCandidate = (e) {
       if (e.candidate != null) {
@@ -375,6 +389,9 @@ class WRTCProducer {
     this.remoteCandidates.clear();
   }
 
+  /**
+   * Widget that show current producer screen media.
+   */
   bool _isMinimizeMedia = false;
   Widget ShowMedia(
       {required Size size, bool allowResize = false, Function? onResize}) {
@@ -582,6 +599,9 @@ class WRTCProducer {
     );
   }
 
+  /**
+   * Widget thats show other users
+   */
   Widget ShowConsumers({required double height, required double width}) {
     return SizedBox(
       height: height,
@@ -741,35 +761,51 @@ class WRTCProducer {
     }
   }
 
+  /**
+   * Handle pined 
+   */
   void _PinedConsumer({required ConsumerM consumer_}) async {
-    if (this.consumerPined.producer.id == consumer_.producer.id) {
+    if (this.consumerPined.producer.id == consumer_.producer.id) // Unpined
+    {
+      await PinedRemove(producer_id: consumer_.producer.id);
+    } else // Pined
+    {
+      await PinedAdd(consumer_: consumer_);
+    }
+  }
+
+  /**
+   * Remove pined from a producer
+   */
+  PinedRemove({required String producer_id}) async {
+    if (this.consumerPined.producer.id == producer_id) {
       await this.consumerPined.Dispose();
       this.consumerPined = ConsumerM.init();
-      print("un pined");
-      int i = this
-          .consumers
-          .indexWhere((e) => e.producer.id == consumer_.producer.id);
+      int i = this.consumers.indexWhere((e) => e.producer.id == producer_id);
       if (i >= 0) {
         this.consumers[i].isPined = false;
       }
 
       _isPined = false;
-    } else {
-      print("pined");
-
-      if (this.consumerPined.producer.id != "") {
-        await this.consumerPined.Dispose();
-      }
-      this.consumerPined = ConsumerM.init();
-      consumer_.isPined = true;
-      this.consumerPined.producer = Producer.copy(consumer_.producer);
-      consumerPined.isPined = true;
-
-      await this.consumerPined.AddMediaStream(consumer_.mediaStream!);
-      _isPined = true;
+      SetStreamEvent();
     }
-    print("consumer_.:" + consumer_.producer.id);
-    print("consumerPined.:" + consumerPined.producer.id);
+  }
+
+  /**
+   * Adding pined to a producer
+   */
+  PinedAdd({required ConsumerM consumer_}) async {
+    if (this.consumerPined.producer.id != "") {
+      await this.consumerPined.Dispose();
+    }
+    this.consumerPined = ConsumerM.init();
+    consumer_.isPined = true;
+    this.consumerPined.producer = Producer.copy(consumer_.producer);
+    consumerPined.isPined = true;
+
+    await this.consumerPined.AddMediaStream(consumer_.mediaStream!);
+    _isPined = true;
+
     SetStreamEvent();
   }
 
@@ -793,6 +829,9 @@ class WRTCProducer {
     }
   }
 
+  /**
+   * Update other user data
+   */
   UpdateConsumers({required List<Producer> producers}) async {
     print("c-update consumers");
     print("new from server producers:" + producers.length.toString());
@@ -874,6 +913,9 @@ class WRTCProducer {
     }
   }
 
+  /**
+   * Get streams from other user from server
+   */
   Future<void> UpdateConsumerStream() async {
     try {
       if (this.peer != null) {
@@ -920,7 +962,9 @@ class WRTCProducer {
   }
 
   // ===================================================================================================
-
+  /**
+   * Detect whenever stream is stoped
+   */
   onStopLocalStream() {
     if (this.producerType == ProducerType.screen) {
       this.stream!.getVideoTracks()[0].onEnded = () {

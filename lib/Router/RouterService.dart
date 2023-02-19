@@ -13,10 +13,13 @@ class RouteService {
 
   static Map<String, dynamic> params = {};
 
+  /**
+   * Setup router
+   */
   static Future<void> setupRouter() async {
     _CoreConfig();
     //---------------------------------------------------------------------
-    for (var _router in RegisterRouter.Routers()) {
+    for (var _router in RegisterRouter.routers) {
       router.define(
         _router.path,
         transitionType: _router.transitionType,

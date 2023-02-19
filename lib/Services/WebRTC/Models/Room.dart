@@ -31,6 +31,7 @@ class Room {
         id: json["id"] ?? '',
         life_time: json["life_time"] ?? 1,
         participants: json["participants"] ?? 0,
+        password: json["password"],
         password_required: json["password_required"] != null
             ? (json["password_required"] == true ||
                     json["password_required"] == "true"

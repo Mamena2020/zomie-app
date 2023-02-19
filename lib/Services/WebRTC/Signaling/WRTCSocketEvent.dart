@@ -107,6 +107,7 @@ class WRTCSocketEvent {
         Producer producer = Producer.fromJson(data["producer"]);
         RTCMessage rtcMessage = RTCMessage.init();
         List<Producer> producers = [];
+
         if (data["producers"] != null) {
           producers = await List<Producer>.from(
               data["producers"].map((e) => Producer.fromJson(e)).toList());
@@ -140,7 +141,13 @@ class WRTCSocketEvent {
           }
           rtcMessage = RTCMessage(
               producer: producer, messsage: _message, type: _messageType);
+
+          // update other producers
           if (WRTCService.instance().wrtcProducer!.peer != null) {
+            await WRTCService.instance()
+                .wrtcProducer!
+                .PinedRemove(producer_id: producer.id);
+
             WRTCService.instance()
                 .wrtcProducer!
                 .UpdateConsumers(producers: producers);

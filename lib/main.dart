@@ -5,8 +5,6 @@ import 'package:zomie_app/Services/WebRtc/WRTCService.dart';
 import 'StateManagement/Providers/proSet.dart';
 import 'Router/RouterService.dart';
 
-import 'package:socket_io_client/socket_io_client.dart' as IO;
-
 Future<void> main() async {
   await InitServices.instance.LoadAllServices();
   runApp(const MyApp());
