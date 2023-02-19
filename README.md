@@ -50,15 +50,15 @@ but you can add your own Turn server using <a href="https://github.com/Mamena202
 #SS Apps
 
 - Desktop-windows
-<img src="ss/ss-home-desktop.PNG" width="370">
+<img src="ss/ss-home-desktop.PNG" width="380">
 
 - Mobile-Android
 <img src="ss/ss-lobby-android.PNG" height="320">
 
 - Web browser
-<img src="ss/ss-lobby-web-desktop.PNG" width="370">
-<img src="ss/ss-room-web-desktop.PNG" width="370">
-<img src="ss/ss-room-web-mobile.jpeg" height="350">
+<img src="ss/ss-lobby-web-desktop.png" width="900">
+<img src="ss/ss-room-web-desktop.png" width="900">
+<img src="ss/ss-room-web-mobile.jpeg" height="700">
 
 
 #How to use
